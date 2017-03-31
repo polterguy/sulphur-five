@@ -1,0 +1,66 @@
+﻿
+/*
+ * Launcher file for Sulphur Five.
+ *
+ * This file is evaluated (without any parameters) from the CMS when the menu item for the Sulphur application
+ * is clicked by the user.
+ */
+
+
+
+
+
+/*
+ * Verifying user is authorized to access this application.
+ */
+whoami
+if:x:/@whoami/*/default?value
+  throw:Sorry, Sulphur Five is only accessible for logged in users
+
+
+
+
+
+/*
+ * Including Bootstrap CSS and JS, in addition to custom Sulphur Five CSS.
+ *
+ * Notice, these events will also include jQuery, since Bootstrap (JS) relies on jQuery.
+ */
+sys42.bootstrap.include-css
+sys42.bootstrap.include-javascript
+p5.web.include-css-file
+  @CMS/media/css/main.css
+  @SULPHUR/media/main.css
+
+
+
+
+
+/*
+ * Making sure we modify our main root widget to become a Bootstrap CSS "container",
+ * in addition to adding our own custom CSS root class to the root widget of page, to have a unique CSS selector,
+ * to make sure no CSS from other apps are not interfering with our custom CSS.
+ *
+ * This allows us, at least in theory, to have multiple apps running on the same page, 
+ * without interfering with each other.
+ */
+p5.web.widgets.property.set:cnt
+  class:container sulphur
+
+
+
+
+
+/*
+ * Settings main page title for application.
+ */
+p5.web.page.set-title:Sulphur Five
+
+
+
+
+
+/*
+ * Creating main form.
+ */
+sys42.utilities.execute-lambda-file:@SULPHUR/create-display.hl

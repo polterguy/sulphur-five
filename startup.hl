@@ -5,7 +5,7 @@
  * This file is evaluated every time the server restarts, or the web server process is recycled for any reasons.
  *
  * This file simply creates an "IO environment variable", allowing us to more easily access the main 
- * Sulphur application folder, in addition to evaluating all Hyperlambda files inside the "/startup/" folder.
+ * Sulphur application folder, in addition to evaluating all Hyperlambda files inside our "/startup/" folder.
  */
 
 

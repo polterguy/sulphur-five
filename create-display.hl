@@ -1,0 +1,52 @@
+﻿
+/*
+ * Creates the main display for Sulphur Five.
+ */
+
+
+
+
+
+/*
+ * Creating main widget structure for Sulphur Five.
+ */
+create-widget
+  parent:cnt
+  class:row
+  widgets
+
+    /*
+     * This is our "branding" parts at the top.
+     */
+    div:sulphur-main-header
+      class:col-xs-12 sulphur-brand
+      widgets
+        a
+          href:"https://gaiasoul.com/donate"
+          target:_blank
+          widgets
+            h1
+              innerValue:Sulphur Five
+              title:Protect your data!
+
+    /*
+     * This is our main "toolbar" (the thing that drops down at the top of the page, and stays in a fixed position).
+     */
+    div
+      class:sephia-selector
+      widgets
+
+        div
+          class:col-xs-8
+          widgets
+
+            /*
+             * This is the "search and page" toolbar at the top.
+             *
+             * Notice, we wrap it inside the "sephia-selector" CSS class widget, to make it "drop down" during start,
+             * and stay in a fixed position during browsing.
+             */
+            sephia.widgets.search-toolbar
+              databind-event:sulphur.inbox.databind
+              page-size:int:19
+              search-accesskey:F

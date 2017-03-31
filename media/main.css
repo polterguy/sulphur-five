@@ -1,0 +1,16 @@
+
+/*
+ * Main CSS file for Sulphur Five.
+ */
+.sulphur {
+}
+.sulphur .sulphur-brand {
+    /*background-image:url(logo.png);*/
+    padding-left:77px;
+    background-repeat:no-repeat;
+    background-position:10px 10px;
+}
+.sulphur .sulphur-brand a {
+    color:rgba(0,0,0,.2);
+    text-decoration:none;
+}
