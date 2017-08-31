@@ -51,7 +51,8 @@ p5.web.include-css-file:@SULPHUR/media/main.css
 
 
 /*
- * Verifying user is logged in, and if not, forcing the user to login before we proceed.
+ * Verifying user is logged in, and if not, 
+ * forcing the user to login before we proceed.
  */
 whoami
 if:x:/@whoami/*/default?value

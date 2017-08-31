@@ -19,18 +19,22 @@ clear-widget:sulphur-main-container
 /*
  * Checking settings to figure out who can upload files.
  */
+select-data:x:/*/*/sulphur.settings
+whoami
+if:x:/@whoami/*/role?value
+  =:root
+  or:x:/@whoami/*/default?value
+    not
+    and:x:/@select-data/*/*/uploaders?value
+      =:users
 
-
-
-
-
-/*
- * Including JavaScript necessary to handle uploading of files.
- *
- * This is done in an Ajax request invoking [.onupload] on a input element,
- * on form which is actually hidden, and exclusively handled using JavaScript.
- */
-p5.web.include-javascript:@"
+  /*
+   * Including JavaScript necessary to handle uploading of files.
+   *
+   * This is done in an Ajax request invoking [.onupload] on a input element,
+   * on form which is actually hidden, and exclusively handled using JavaScript.
+   */
+  p5.web.include-javascript:@"
 p5.sulphur_upload_files = function(e) {
   var obsc = p5.$('sulphur-upload-obscurer').el;
   obsc.style.display = 'block';
@@ -53,15 +57,21 @@ p5.sulphur_upload_files = function(e) {
   }
 }"
 
+else
+
+  /*
+   * Only root can upload.
+   */
+  set:x:/../*/create-widget/*/widgets/*(/micro.widgets.obscurer|/div/*/widgets/*/div/*/widgets/*/div/*/widgets/*/button/=sulphur-upload-widget)
+
 
 
 
 
 /*
- * Verifying user it "root", and if not, we remove settings.
+ * Verifying user is "root", and if not, we remove settings.
  */
-whoami
-if:x:/-/*/role?value
+if:x:/@whoami/*/role?value
   !=:root
   set:x:/../*/create-widget/**/button/=sulphur-settings-button
 
@@ -85,6 +95,55 @@ create-widget:sulphur-main-wrapper
         div
           class:right
           widgets
+
+            /*
+             * Hidden file input element, handled through JavaScript, that allows user
+             * to add attachments to his email.
+             */
+            input:sulphur-upload-file-input
+              style:"display:none;"
+              type:file
+              class:sulphurAttachmentFileInput
+              onchange:"p5.sulphur_upload_files(event);"
+              .onupload
+
+                /*
+                 * Retrieving the file name and content.
+                 */
+                p5.web.post.get:sulphur-file-name
+                p5.web.post.get:sulphur-file-content
+
+                /*
+                 * Creating a random prefix, decoding vile's content, 
+                 * and saving file to common private folder, to make sure 
+                 * it's not accessible, even with a direct link.
+                 */
+                p5.string.decode-base64:x:/../*/p5.web.post.get/*/sulphur-file-content?value
+                p5.types.guid.new
+                save-file:/common/documents/private/{0}-{1}
+                  :x:/@p5.types.guid.new?value
+                  :x:/../*/p5.web.post.get/*/sulphur-file-name?value
+                  src:x:/@p5.string.decode-base64?value
+
+                /*
+                 * Inserting entry for file into database.
+                 */
+                whoami
+                p5.mysql.connect:[sulphur]
+                  p5.mysql.insert:@"insert into files (filename, prefix, username, name, description) values(@filename, @prefix, @username, @name, @description)"
+                    @filename:x:/../*/p5.web.post.get/*/sulphur-file-name?value
+                    @prefix:x:/@p5.types.guid.new?value
+                    @username:x:/@whoami/*/username?value
+                    @name:"Default name, please change ..."
+                    @description:"Default description, please change ..."
+
+                /*
+                 * Asking user to supply some description, and a name for file.
+                 */
+                eval-x:x:/+/*
+                micro.evaluate.file:@SULPHUR/files/supply-file-info.hl
+                  id:x:/@p5.mysql.connect/*/p5.mysql.insert/*/id?value
+
             div
               class:strip
               style:"display:inline-block;"
@@ -106,59 +165,11 @@ create-widget:sulphur-main-wrapper
                 /*
                  * Upload file button.
                  */
-                button
+                button:sulphur-upload-widget
                   style:"padding-left:45px;padding-right:45px;"
                   innerValue:@"<span class=""icon-upload""></span>"
                   title:Upload file ...
                   onclick:@"document.querySelector('.sulphurAttachmentFileInput').click();return false;"
-
-                /*
-                 * Hidden file input element, handled through JavaScript, that allows user
-                 * to add attachments to his email.
-                 */
-                input:sulphur-upload-file-input
-                  style:"display:none;"
-                  type:file
-                  class:sulphurAttachmentFileInput
-                  onchange:"p5.sulphur_upload_files(event);"
-                  .onupload
-
-                    /*
-                     * Retrieving the file name and content.
-                     */
-                    p5.web.post.get:sulphur-file-name
-                    p5.web.post.get:sulphur-file-content
-
-                    /*
-                     * Creating a random prefix, decoding vile's content, 
-                     * and saving file to common private folder, to make sure 
-                     * it's not accessible, even with a direct link.
-                     */
-                    p5.string.decode-base64:x:/../*/p5.web.post.get/*/sulphur-file-content?value
-                    p5.types.guid.new
-                    save-file:/common/documents/private/{0}-{1}
-                      :x:/@p5.types.guid.new?value
-                      :x:/../*/p5.web.post.get/*/sulphur-file-name?value
-                      src:x:/@p5.string.decode-base64?value
-
-                    /*
-                     * Inserting entry for file into database.
-                     */
-                    whoami
-                    p5.mysql.connect:[sulphur]
-                      p5.mysql.insert:@"insert into files (filename, prefix, username, name, description) values(@filename, @prefix, @username, @name, @description)"
-                        @filename:x:/../*/p5.web.post.get/*/sulphur-file-name?value
-                        @prefix:x:/@p5.types.guid.new?value
-                        @username:x:/@whoami/*/username?value
-                        @name:"Default name, please change ..."
-                        @description:"Default description, please change ..."
-
-                    /*
-                     * Asking user to supply some description, and a name for file.
-                     */
-                    eval-x:x:/+/*
-                    micro.evaluate.file:@SULPHUR/files/supply-file-info.hl
-                      id:x:/@p5.mysql.connect/*/p5.mysql.insert/*/id?value
 
                 /*
                  * Home button, leads user to main desktop.
