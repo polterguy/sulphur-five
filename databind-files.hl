@@ -53,7 +53,7 @@ p5.mysql.connect:[sulphur]
                  */
                 _id:x:/@_dp/#/*/id?value
                 eval-x:x:/+/*
-                micro.evaluate.file:@SULPHUR/handle-file.hl
+                micro.evaluate.file:@SULPHUR/handle-files/handle-file.hl
                   id:x:/@_id?value
 
               widgets

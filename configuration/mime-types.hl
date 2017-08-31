@@ -64,9 +64,6 @@ mp3
 wav
   audio:wav
     Content-Transfer-Encoding:binary
-ogg
-  audio:ogg
-    Content-Transfer-Encoding:binary
 wav
   audio:x-wav
     Content-Transfer-Encoding:binary
@@ -86,6 +83,9 @@ aac
  */
 mpeg
   video:mpeg
+    Content-Transfer-Encoding:binary
+mp4
+  video:mp4
     Content-Transfer-Encoding:binary
 ogv
   video:ogg

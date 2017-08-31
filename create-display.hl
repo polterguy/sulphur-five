@@ -50,6 +50,18 @@ p5.sulphur_upload_files = function(e) {
 
 
 /*
+ * Verifying user it "root", and if not, we remove settings.
+ */
+whoami
+if:x:/-/*/role?value
+  !=:root
+  set:x:/../*/create-widget/**/button/=sulphur-settings
+
+
+
+
+
+/*
  * Creating main display.
  */
 create-widget:sulphur-main-wrapper
@@ -69,6 +81,14 @@ create-widget:sulphur-main-wrapper
               class:strip
               style:"display:inline-block;"
               widgets
+
+                /*
+                 * Settings button.
+                 */
+                button:sulphur-settings
+                  innerValue:@"<span class=""icon-cog""></span>"
+                  title:Manage settings ...
+                  onclick
 
                 /*
                  * Upload file button.

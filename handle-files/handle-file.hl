@@ -73,7 +73,7 @@ p5.mysql.connect:[sulphur]
        * This is an image file.
        */
       eval-x:x:/+/*
-      micro.evaluate.file:@SULPHUR/handle-image-file.hl
+      micro.evaluate.file:@SULPHUR/handle-files/handle-image-file.hl
         image:/common/documents/private/{0}-{1}
           :x:/@p5.mysql.select/*/*/prefix?value
           :x:/@p5.mysql.select/*/*/filename?value
@@ -86,7 +86,7 @@ p5.mysql.connect:[sulphur]
        * This is a video file.
        */
       eval-x:x:/+/*
-      micro.evaluate.file:@SULPHUR/handle-video-file.hl
+      micro.evaluate.file:@SULPHUR/handle-files/handle-video-file.hl
         video:/common/documents/private/{0}-{1}
           :x:/@p5.mysql.select/*/*/prefix?value
           :x:/@p5.mysql.select/*/*/filename?value
@@ -98,7 +98,7 @@ p5.mysql.connect:[sulphur]
        * This is a sound file.
        */
       eval-x:x:/+/*
-      micro.evaluate.file:@SULPHUR/handle-sound-file.hl
+      micro.evaluate.file:@SULPHUR/handle-files/handle-sound-file.hl
         image:/common/documents/private/{0}-{1}
           :x:/@p5.mysql.select/*/*/prefix?value
           :x:/@p5.mysql.select/*/*/filename?value

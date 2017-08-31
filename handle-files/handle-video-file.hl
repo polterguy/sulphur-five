@@ -10,6 +10,15 @@
 
 
 /*
+ * Including JavaScript file for displaying elements in fullscreen.
+ */
+p5.web.include-javascript-file:@SULPHUR/media/screenfull.js
+
+
+
+
+
+/*
  * Simply showing video in modal widget.
  */
 p5.web.get-location
@@ -18,7 +27,8 @@ create-literal-widget
   parent:sulphur-file-preview-content
   element:video
   controls
-  onclick
+  autoplay
+  onclick:"screenfull.toggle(event.target);event.stopPropagation(true);return false;"
   src:{0}?file={1}
     :x:/@p5.web.get-location?value
     :x:/@p5.html.url-encode?value
