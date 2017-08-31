@@ -80,20 +80,6 @@ create-widget:sulphur-main-wrapper
                   onclick:@"document.querySelector('.sulphurAttachmentFileInput').click();return false;"
 
                 /*
-                 * Home button, leads user to main desktop.
-                 */
-                button
-                  innerValue:@"<span class=""icon-home""></span>"
-                  title:Return to desktop
-                  onclick
-
-                    /*
-                     * Redirecting to root location.
-                     */
-                    p5.web.get-root-location
-                    p5.web.set-location:x:/-?value
-
-                /*
                  * Hidden file input element, handled through JavaScript, that allows user
                  * to add attachments to his email.
                  */
@@ -142,6 +128,20 @@ create-widget:sulphur-main-wrapper
                     micro.evaluate.file:@SULPHUR/supply-file-info.hl
                       id:x:/@p5.mysql.connect/*/p5.mysql.insert/*/id?value
 
+                /*
+                 * Home button, leads user to main desktop.
+                 */
+                button
+                  innerValue:@"<span class=""icon-home""></span>"
+                  title:Return to desktop
+                  onclick
+
+                    /*
+                     * Redirecting to root location.
+                     */
+                    p5.web.get-root-location
+                    p5.web.set-location:x:/-?value
+
     div
       class:col-100
       widgets
@@ -149,12 +149,8 @@ create-widget:sulphur-main-wrapper
         /*
          * Datagrid wrapping actual files in system.
          */
-        micro.widgets.grid:sulphur-files-grid
-          columns
-            Name
-            User
-            Actions
-          class:hover
+        container:sulphur-files-grid
+          class:row
           oninit
 
             /*

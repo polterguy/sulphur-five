@@ -1,0 +1,56 @@
+﻿
+/*
+ * Invoked when a file is clicked.
+ *
+ * Logic depends upon what type of user is currently clicking file.
+ */
+
+
+
+
+
+/*
+ * Selecting file from database.
+ */
+p5.mysql.connect:[sulphur]
+  p5.mysql.select:@"select * from files where id = @id"
+    @id:x:/../*/id?value
+
+  /*
+   * Checking file type, and if it is either an image or a movie,
+   * we simply display it "inline" in a widget of appropriate choice.
+   */
+  split:x:/@p5.mysql.select/*/*/filename?value
+    =:.
+
+  /*
+   * Making sure we do a lowers comparison of file extension.
+   */
+  set:x:/@split/0/-?name
+    to-lower:x:/@split/0/-?name
+
+  /*
+   * Attempting to correctly handliing file according to its type.
+   */
+  switch:x:/@split/0/-?name
+    case:jpg
+    case:jpeg
+    case:gif
+    case:png
+    case:bmp
+
+      /*
+       * This is an image file.
+       */
+
+    case:webm
+    case:mp4
+    case:ogg
+
+      /*
+       * This is a video file.
+       */
+
+  create-widget
+    element:pre
+    innerValue:x:/..

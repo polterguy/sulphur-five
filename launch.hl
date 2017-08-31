@@ -44,6 +44,7 @@ p5.web.include-css-file:@MICRO/media/main.css
 p5.web.include-css-file:@MICRO/media/ext.css
 p5.web.include-css-file:@MICRO/media/fonts.css
 p5.web.include-css-file:@MICRO/media/skins/serious.css
+p5.web.include-css-file:@SULPHUR/media/main.css
 
 
 
@@ -57,16 +58,29 @@ if:x:/@whoami/*/default?value
 
   /*
    * User is not logged in.
-   *
-   * Notice, we also explicitly include the "serious" skin here, as default skin for Micro.
    */
-  p5.web.include-css-file:@MICRO/media/skins/serious.css
   p5.core.login
 
   /*
    * Returning early to abort evaluating the rest of our file.
    */
   return
+
+
+
+
+
+/*
+ * Checking if this is a request for a file, at which point we return it to client,
+ * and return early.
+ */
+p5.web.query.get:file
+if:x:/-/*?value
+
+  /*
+   * This is a file request, echoing to client.
+   */
+  p5.web.echo-file:x:/@p5.web.query.get/*?value
 
 
 

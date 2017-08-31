@@ -2,15 +2,20 @@
 /*
  * Main CSS file for Sulphur Five.
  */
-.sulphur {
+.sulphur-file-item {
+    min-height:250px;
+    display:block;
+    cursor:pointer;
+    transition-property:box.shadow;
+    transition-duration:.2s;
+    transition-timing-function:ease-in-out;
 }
-.sulphur .sulphur-brand {
-    /*background-image:url(logo.png);*/
-    padding-left:77px;
-    background-repeat:no-repeat;
-    background-position:10px 10px;
-}
-.sulphur .sulphur-brand a {
-    color:rgba(0,0,0,.2);
-    text-decoration:none;
+.sulphur-file-item:focus,
+.sulphur-file-item:active,
+.sulphur-file-item:hover {
+    box-shadow:2px 2px 5px rgba(0,0,0,.7);
+    transition-property:box.shadow;
+    transition-duration:.2s;
+    transition-timing-function:ease-in-out;
+    z-index:1;
 }

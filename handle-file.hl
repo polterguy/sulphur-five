@@ -1,0 +1,86 @@
+﻿
+/*
+ * Invoked when a file is clicked.
+ * Logic depends upon what type of user is currently clicking file.
+ *
+ * Expects [id] being database id of file.
+ */
+
+
+
+
+
+/*
+ * Selecting file from database.
+ */
+p5.mysql.connect:[sulphur]
+  p5.mysql.select:@"select * from files where id = @id"
+    @id:x:/../*/id?value
+
+  /*
+   * Creating a modal widget to "host" file.
+   */
+  eval-x:x:/+/*/*/*/*/innerValue
+  create-widgets
+    micro.widgets.modal:sulphur-file-preview
+      widgets
+        h3
+          innerValue:x:/@p5.mysql.select/*/*/name?value
+        container:sulphur-file-preview-content
+
+  /*
+   * Checking file type, and if it is either an image or a movie,
+   * we simply display it "inline" in a widget of appropriate choice.
+   */
+  split:x:/@p5.mysql.select/*/*/filename?value
+    =:.
+
+  /*
+   * Making sure we do a lowers comparison of file extension.
+   */
+  set:x:/@split/0/-?name
+    to-lower:x:/@split/0/-?name
+
+  /*
+   * Attempting to correctly handling file according to its type.
+   */
+  switch:x:/@split/0/-?name
+    case:jpg
+    case:jpeg
+    case:gif
+    case:png
+    case:bmp
+
+      /*
+       * This is an image file.
+       */
+      eval-x:x:/+/*
+      micro.evaluate.file:@SULPHUR/handle-image-file.hl
+        image:/common/documents/private/{0}-{1}
+          :x:/@p5.mysql.select/*/*/prefix?value
+          :x:/@p5.mysql.select/*/*/filename?value
+
+    case:webm
+    case:mp4
+    case:ogg
+
+      /*
+       * This is a video file.
+       */
+      eval-x:x:/+/*
+      micro.evaluate.file:@SULPHUR/handle-video-file.hl
+        image:/common/documents/private/{0}-{1}
+          :x:/@p5.mysql.select/*/*/prefix?value
+          :x:/@p5.mysql.select/*/*/filename?value
+
+    case:wav
+    case:mp3
+
+      /*
+       * This is a sound file.
+       */
+      eval-x:x:/+/*
+      micro.evaluate.file:@SULPHUR/handle-sound-file.hl
+        image:/common/documents/private/{0}-{1}
+          :x:/@p5.mysql.select/*/*/prefix?value
+          :x:/@p5.mysql.select/*/*/filename?value

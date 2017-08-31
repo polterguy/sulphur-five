@@ -34,34 +34,36 @@ p5.mysql.connect:[sulphur]
    * Looping through each result from above, and creating one record for each result.
    */
   for-each:x:/@p5.mysql.select/*
-    eval-x:x:/+/*/*/*(/Name|/User|/**(/_prefix|/_filename))
-    add:x:/..p5.mysql.connect/*/micro.widgets.grid.databind
+    markdown2html:x:/@_dp/#/*/description?value
+    eval-x:x:/+/*/*/*/widgets/*/container/*/widgets/*(/h3|/div)/*/innerValue|/+/**/_id
+    add:x:/..p5.mysql.connect/*/create-widgets
       src
-        item
-          Name:x:/@_dp/#/*/name?value
-          User:x:/@_dp/#/*/username?value
-          Download
-            widgets
-              a
-                href:#
-                role:button
-                innerValue:@"<span class=""icon-download""></span>"
-                onclick
+        container
+          parent:sulphur-files-grid
+          class:col-50
+          widgets
+            container
+              role:button
+              class:sulphur-file-item rounded shaded air-inner
+              onclick
 
-                  /*
-                   * Forward evaluated above.
-                   */
-                  _prefix:x:/@_dp/#/*/prefix?value
-                  _filename:x:/@_dp/#/*/filename?value
+                /*
+                 * Forward evaluated above.
+                 * Invokes file responsible for handling file.
+                 */
+                _id:x:/@_dp/#/*/id?value
+                eval-x:x:/+/*
+                micro.evaluate.file:@SULPHUR/handle-file.hl
+                  id:x:/@_id?value
 
-                  /*
-                   * Downloading file to user's client.
-                   */
-                  create-widget
-                    element:pre
-                    innerValue:x:/..
+              widgets
+                h3
+                  innerValue:x:/@_dp/#/*/name?value
+                div
+                  innerValue:x:/@markdown2html?value
 
   /*
    * Databinding files grid.
    */
-  micro.widgets.grid.databind:sulphur-files-grid
+  clear-widget:sulphur-files-grid
+  create-widgets
