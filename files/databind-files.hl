@@ -35,6 +35,8 @@ p5.mysql.connect:[sulphur]
    */
   for-each:x:/@p5.mysql.select/*
     markdown2html:x:/@_dp/#/*/description?value
+    p5.types.date.format:x:/@_dp/#/*/uploaded?value
+      format:"d. MMM yyyy - HH:mm"
     eval-x:x:/+/*/*/*/widgets/*/container/*/widgets/*(/h3|/label|/div)/*/innerValue|/+/**/_id
     add:x:/..p5.mysql.connect/*/create-widgets
       src
@@ -62,6 +64,9 @@ p5.mysql.connect:[sulphur]
                 label
                   class:sulphur-username
                   innerValue:x:/@_dp/#/*/username?value
+                label
+                  class:sulphur-uploaded
+                  innerValue:x:/@p5.types.date.format?value
                 div
                   innerValue:x:/@markdown2html?value
 

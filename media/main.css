@@ -27,6 +27,14 @@
     color:#d0d0d0;
     font-style:italic;
 }
+.sulphur-uploaded {
+    position:absolute;
+    bottom:.5rem;
+    right:.5rem;
+    font-weight:normal;
+    color:#d0d0d0;
+    font-style:italic;
+}
 .sulphur-preview-file {
     position:fixed;
     top:0;
