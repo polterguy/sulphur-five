@@ -1,0 +1,91 @@
+﻿
+/*
+ * Allows a root account to go through settings for app.
+ */
+
+
+
+
+
+/*
+ * Retrieving settings from p5.data.
+ */
+select-data:x:/*/*/sulphur.settings
+if:x:/@select-data/*/*/uploaders?value
+  =:users
+
+  /*
+   * Any user can upload files.
+   */
+  add:x:/../*/create-widgets/**/=users
+    src:checked
+
+else
+
+  /*
+   * Only root can upload files.
+   */
+  add:x:/../*/create-widgets/**/=root
+    src:checked
+
+
+
+
+
+/*
+ * Creates a modal widget allowing user to edit settings.
+ */
+create-widgets
+  micro.widgets.modal:sulphur-modal-settings
+    widgets
+      h3
+        innerValue:Settings
+      micro.widgets.wizard-form:sulphur-settings
+        radio-group
+          .data-field:uploaders
+          options
+            Any user can upload:users
+            Only root can upload:root
+        div
+          class:right
+          widgets
+            div
+              class:strip
+              style:"display:inline-block;"
+              widgets
+                button
+                  innerValue:Save
+                  style:"margin-bottom:0;"
+                  oninit
+
+                    /*
+                     * Setting focus to widget.
+                     */
+                    micro.page.set-focus:x:/../*/_event?value
+
+                  onclick
+
+                    /*
+                     * Retrieving settings and updating.
+                     */
+                    micro.widgets.wizard-form.value:sulphur-settings
+                    eval-x:x:/+/*/*/*
+                    update-data:x:/*/*/sulphur.settings
+                      src
+                        sulphur.settings
+                          uploaders:x:/@micro.widgets.wizard-form.value/*?value
+
+                    /*
+                     * Deleting modal settings widget.
+                     */
+                    delete-widget:sulphur-modal-settings
+
+                button
+                  innerValue:Close
+                  style:"margin-bottom:0;"
+                  onclick
+
+                    /*
+                     * Simply deleting modal settings widget.
+                     */
+                    delete-widget:sulphur-modal-settings

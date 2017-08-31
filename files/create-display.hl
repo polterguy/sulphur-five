@@ -17,6 +17,14 @@ clear-widget:sulphur-main-container
 
 
 /*
+ * Checking settings to figure out who can upload files.
+ */
+
+
+
+
+
+/*
  * Including JavaScript necessary to handle uploading of files.
  *
  * This is done in an Ajax request invoking [.onupload] on a input element,
@@ -55,7 +63,7 @@ p5.sulphur_upload_files = function(e) {
 whoami
 if:x:/-/*/role?value
   !=:root
-  set:x:/../*/create-widget/**/button/=sulphur-settings
+  set:x:/../*/create-widget/**/button/=sulphur-settings-button
 
 
 
@@ -85,10 +93,15 @@ create-widget:sulphur-main-wrapper
                 /*
                  * Settings button.
                  */
-                button:sulphur-settings
+                button:sulphur-settings-button
                   innerValue:@"<span class=""icon-cog""></span>"
                   title:Manage settings ...
                   onclick
+
+                    /*
+                     * Launching settings form.
+                     */
+                    micro.evaluate.file:@SULPHUR/configuration/settings.hl
 
                 /*
                  * Upload file button.
@@ -107,7 +120,6 @@ create-widget:sulphur-main-wrapper
                   style:"display:none;"
                   type:file
                   class:sulphurAttachmentFileInput
-                  multiple
                   onchange:"p5.sulphur_upload_files(event);"
                   .onupload
 
@@ -145,7 +157,7 @@ create-widget:sulphur-main-wrapper
                      * Asking user to supply some description, and a name for file.
                      */
                     eval-x:x:/+/*
-                    micro.evaluate.file:@SULPHUR/supply-file-info.hl
+                    micro.evaluate.file:@SULPHUR/files/supply-file-info.hl
                       id:x:/@p5.mysql.connect/*/p5.mysql.insert/*/id?value
 
                 /*
@@ -176,4 +188,4 @@ create-widget:sulphur-main-wrapper
             /*
              * Initial databinding of files.
              */
-            micro.evaluate.file:@SULPHUR/databind-files.hl
+            micro.evaluate.file:@SULPHUR/files/databind-files.hl

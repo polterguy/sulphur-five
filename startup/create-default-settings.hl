@@ -1,0 +1,14 @@
+
+/*
+ * Creates default settings if they don't exist from before.
+ */
+select-data:x:/*/*/sulphur.settings
+if:x:/-/*
+  not
+
+  /*
+   * Settings don't exist, inserting defaults.
+   */
+  insert-data
+    sulphur.settings
+      uploaders:users

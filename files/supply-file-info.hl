@@ -65,4 +65,4 @@ create-widgets
                  * Deleting modal widget, and re-databinding grid.
                  */
                 delete-widget:sulphur-supply-file-info
-                micro.evaluate.file:@SULPHUR/databind-files.hl
+                micro.evaluate.file:@SULPHUR/files/databind-files.hl
