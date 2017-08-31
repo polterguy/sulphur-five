@@ -22,10 +22,28 @@ p5.mysql.connect:[sulphur]
    */
   eval-x:x:/+/*/*/*/*/innerValue
   create-widgets
-    micro.widgets.modal:sulphur-file-preview
+    container:sulphur-file-preview
+      class:sulphur-preview-file
+      onclick
+
+        /*
+         * Deleting preview lightbox.
+         */
+        delete-widget:sulphur-file-preview
+
       widgets
-        h3
-          innerValue:x:/@p5.mysql.select/*/*/name?value
+        a
+          href:#
+          role:button
+          class:sulphur-close-preview
+          innerValue:@"<span class=""icon-close""></span>"
+          onclick
+
+            /*
+             * Simply deleting preview widget.
+             */
+            delete-widget:sulphur-file-preview
+
         container:sulphur-file-preview-content
 
   /*
@@ -69,7 +87,7 @@ p5.mysql.connect:[sulphur]
        */
       eval-x:x:/+/*
       micro.evaluate.file:@SULPHUR/handle-video-file.hl
-        image:/common/documents/private/{0}-{1}
+        video:/common/documents/private/{0}-{1}
           :x:/@p5.mysql.select/*/*/prefix?value
           :x:/@p5.mysql.select/*/*/filename?value
 

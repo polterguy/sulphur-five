@@ -1,0 +1,63 @@
+
+/*
+ * Desktop widget file for Silphur Five.
+ */
+container
+  element:a
+  class:desktop-app shaded rounded air-inner
+  title:View files
+  oninit
+
+    /*
+     * Verifying user is logged in, and if not, deleting widget altogether, 
+     * and returning early.
+     */
+    whoami
+    if:x:/@whoami/*/default?value
+
+      /*
+       * User is not logged in, simply deleting entire icon.
+       */
+      delete-widget:x:/../*/_event?value
+      return
+
+    /*
+     * Getting URL to point correctly.
+     */
+    p5.io.unroll-path:@SULPHUR/
+    split:x:/-?value
+      =:/
+    set-widget-property:x:/../*/_event?value
+      href:/{0}
+        :x:/@split/0/-?name
+
+  widgets
+    span
+      class:desktop-app-name
+      innerValue:Files
+      oninit
+
+        /*
+         * Making sure user is logged in, and if not, we don't display any count at all.
+         */
+        whoami
+        if:x:/@whoami/*/default?value
+
+          /*
+           * User is not logged in, returning early.
+           */
+          return
+
+
+        /*
+         * Doing a count of files, and adding to icon.
+         */
+        p5.mysql.connect:[sulphur]
+          p5.mysql.scalar:@"select count(*) from files"
+
+          /*
+           * Setting widget's innerValue, making sure we drop 'count' altogether, if it's zero.
+           */
+          set-widget-property:x:/../*/_event?value
+            innerValue:@"<span class=""icon-film desktop-app-icon""></span><span style=""position:absolute;top:5px;right:5px;font-size:.8rem;"">{0}</span>"
+              :x:/@p5.mysql.scalar?value

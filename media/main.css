@@ -19,3 +19,25 @@
     transition-timing-function:ease-in-out;
     z-index:1;
 }
+.sulphur-preview-file {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.5);
+}
+.sulphur-close-preview {
+    position:absolute;
+    top:.5rem;
+    right:.5rem;
+    font-size:2em;
+    opacity:.5;
+}
+#sulphur-file-preview-content img,
+#sulphur-file-preview-content video {
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:2rem;
+}

@@ -18,6 +18,7 @@ create-widget
   parent:sulphur-file-preview-content
   element:img
   alt:Preview of image
+  onclick
   src:{0}?file={1}
     :x:/@p5.web.get-location?value
     :x:/@p5.html.url-encode?value
