@@ -2,8 +2,8 @@
 /*
  * Launcher file for Sulphur Five.
  *
- * This file is evaluated (without any parameters) from the CMS when the menu item for the Sulphur application
- * is clicked by the user.
+ * This file is evaluated (without any parameters) when the desktop icon for 
+ * Sulphur is clicked by the user.
  */
 
 
@@ -11,56 +11,68 @@
 
 
 /*
- * Verifying user is authorized to access this application.
+ * Clearing out anything previously added to page, to make sure we start
+ * out Sephia with a blank slate.
+ */
+clear-widget:cnt
+delete-widget-property:cnt
+  class
+
+
+
+
+
+/*
+ * Creating main content container.
+ *
+ * This is the place where "everything" is stored in Sephia, and is used to display
+ * the inbox, Sephia's settings, emails the user is reading, etc, etc, etc.
+ *
+ * Notice, we only use one "container" widget from Micro for everything related to Sephia.
+ */
+create-container-widget:sulphur-main-container
+  class:container
+
+
+
+
+
+/*
+ * Including Micro, and adding Awesome Fonts.
+ */
+p5.web.include-css-file:@MICRO/media/main.css
+p5.web.include-css-file:@MICRO/media/ext.css
+p5.web.include-css-file:@MICRO/media/fonts.css
+p5.web.include-css-file:@MICRO/media/skins/serious.css
+
+
+
+
+
+/*
+ * Verifying user is logged in, and if not, forcing the user to login before we proceed.
  */
 whoami
 if:x:/@whoami/*/default?value
-  throw:Sorry, Sulphur Five is only accessible for logged in users
+
+  /*
+   * User is not logged in.
+   *
+   * Notice, we also explicitly include the "serious" skin here, as default skin for Micro.
+   */
+  p5.web.include-css-file:@MICRO/media/skins/serious.css
+  p5.core.login
+
+  /*
+   * Returning early to abort evaluating the rest of our file.
+   */
+  return
 
 
 
 
 
 /*
- * Including Bootstrap CSS and JS, in addition to custom Sulphur Five CSS.
- *
- * Notice, these events will also include jQuery, since Bootstrap (JS) relies on jQuery.
+ * Evaluating file responsibel for creating actual viewport.
  */
-sys42.bootstrap.include-css
-sys42.bootstrap.include-javascript
-p5.web.include-css-file
-  @CMS/media/css/main.css
-  @SULPHUR/media/main.css
-
-
-
-
-
-/*
- * Making sure we modify our main root widget to become a Bootstrap CSS "container",
- * in addition to adding our own custom CSS root class to the root widget of page, to have a unique CSS selector,
- * to make sure no CSS from other apps are not interfering with our custom CSS.
- *
- * This allows us, at least in theory, to have multiple apps running on the same page, 
- * without interfering with each other.
- */
-p5.web.widgets.property.set:cnt
-  class:container sulphur
-
-
-
-
-
-/*
- * Settings main page title for application.
- */
-p5.web.page.set-title:Sulphur Five
-
-
-
-
-
-/*
- * Creating main form.
- */
-sys42.utilities.execute-lambda-file:@SULPHUR/create-display.hl
+micro.evaluate.file:@SULPHUR/create-display.hl

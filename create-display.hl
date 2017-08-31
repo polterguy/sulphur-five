@@ -8,45 +8,156 @@
 
 
 /*
- * Creating main widget structure for Sulphur Five.
+ * Clearing main container.
  */
-create-widget
-  parent:cnt
+clear-widget:sulphur-main-container
+
+
+
+
+
+/*
+ * Including JavaScript necessary to handle uploading of files.
+ *
+ * This is done in an Ajax request invoking [.onupload] on a input element,
+ * on form which is actually hidden, and exclusively handled using JavaScript.
+ */
+p5.web.include-javascript:@"
+p5.sulphur_upload_files = function(e) {
+  var obsc = p5.$('sulphur-upload-obscurer').el;
+  obsc.style.display = 'block';
+  var files = e.target.files;
+  for(var i = 0; i < files.length; i++) {
+    var reader = new FileReader();
+    reader.onload = (function(file) {
+      return function(data) {
+        p5.$(e.target.id).raise('.onupload', {
+          onbefore:function(pars,evt) {
+            pars.push(['sulphur-file-name', file.name], ['sulphur-file-content', data.target.result.split('base64,')[1]]);
+          },
+          onsuccess:function(ret,evt) {
+            obsc.style.display = 'none';
+          }
+        });
+      }
+    })(files[i]);
+    reader.readAsDataURL(files[i]);
+  }
+}"
+
+
+
+
+
+/*
+ * Creating main display.
+ */
+create-widget:sulphur-main-wrapper
+  parent:sulphur-main-container
   class:row
   widgets
-
-    /*
-     * This is our "branding" parts at the top.
-     */
-    div:sulphur-main-header
-      class:col-xs-12 sulphur-brand
-      widgets
-        a
-          href:"https://gaiasoul.com/donate"
-          target:_blank
-          widgets
-            h1
-              innerValue:Sulphur Five
-              title:Protect your data!
-
-    /*
-     * This is our main "toolbar" (the thing that drops down at the top of the page, and stays in a fixed position).
-     */
+    micro.widgets.obscurer:sulphur-upload-obscurer
+      message:Please wait while we're uploading your file ...
+      style:"display:none;"
     div
-      class:sephia-selector
+      class:col-100
+      widgets
+        div
+          class:right
+          widgets
+            div
+              class:strip
+              style:"display:inline-block;"
+              widgets
+
+                /*
+                 * Upload file button.
+                 */
+                button
+                  style:"padding-left:45px;padding-right:45px;"
+                  innerValue:@"<span class=""icon-upload""></span>"
+                  title:Upload file ...
+                  onclick:@"document.querySelector('.sulphurAttachmentFileInput').click();return false;"
+
+                /*
+                 * Home button, leads user to main desktop.
+                 */
+                button
+                  innerValue:@"<span class=""icon-home""></span>"
+                  title:Return to desktop
+                  onclick
+
+                    /*
+                     * Redirecting to root location.
+                     */
+                    p5.web.get-root-location
+                    p5.web.set-location:x:/-?value
+
+                /*
+                 * Hidden file input element, handled through JavaScript, that allows user
+                 * to add attachments to his email.
+                 */
+                input:sulphur-upload-file-input
+                  style:"display:none;"
+                  type:file
+                  class:sulphurAttachmentFileInput
+                  multiple
+                  onchange:"p5.sulphur_upload_files(event);"
+                  .onupload
+
+                    /*
+                     * Retrieving the file name and content.
+                     */
+                    p5.web.post.get:sulphur-file-name
+                    p5.web.post.get:sulphur-file-content
+
+                    /*
+                     * Creating a random prefix, decoding vile's content, 
+                     * and saving file to common private folder, to make sure 
+                     * it's not accessible, even with a direct link.
+                     */
+                    p5.string.decode-base64:x:/../*/p5.web.post.get/*/sulphur-file-content?value
+                    p5.types.guid.new
+                    save-file:/common/documents/private/{0}-{1}
+                      :x:/@p5.types.guid.new?value
+                      :x:/../*/p5.web.post.get/*/sulphur-file-name?value
+                      src:x:/@p5.string.decode-base64?value
+
+                    /*
+                     * Inserting entry for file into database.
+                     */
+                    whoami
+                    p5.mysql.connect:[sulphur]
+                      p5.mysql.insert:@"insert into files (filename, prefix, username, name, description) values(@filename, @prefix, @username, @name, @description)"
+                        @filename:x:/../*/p5.web.post.get/*/sulphur-file-name?value
+                        @prefix:x:/@p5.types.guid.new?value
+                        @username:x:/@whoami/*/username?value
+                        @name:"Default name, please change ..."
+                        @description:"Default description, please change ..."
+
+                    /*
+                     * Asking user to supply some description, and a name for file.
+                     */
+                    eval-x:x:/+/*
+                    micro.evaluate.file:@SULPHUR/supply-file-info.hl
+                      id:x:/@p5.mysql.connect/*/p5.mysql.insert/*/id?value
+
+    div
+      class:col-100
       widgets
 
-        div
-          class:col-xs-8
-          widgets
+        /*
+         * Datagrid wrapping actual files in system.
+         */
+        micro.widgets.grid:sulphur-files-grid
+          columns
+            Name
+            User
+            Actions
+          class:hover
+          oninit
 
             /*
-             * This is the "search and page" toolbar at the top.
-             *
-             * Notice, we wrap it inside the "sephia-selector" CSS class widget, to make it "drop down" during start,
-             * and stay in a fixed position during browsing.
+             * Initial databinding of files.
              */
-            sephia.widgets.search-toolbar
-              databind-event:sulphur.inbox.databind
-              page-size:int:19
-              search-accesskey:F
+            micro.evaluate.file:@SULPHUR/databind-files.hl

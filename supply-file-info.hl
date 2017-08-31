@@ -1,0 +1,68 @@
+﻿
+/*
+ * File responsible for asking user to supply name and description for newly uploaded file.
+ *
+ * Requires [id] being database of newly inserted file.
+ */
+
+
+
+
+
+/*
+ * Creating a modal widget, asking user to supply some sane name and description
+ * for newly uploaded file.
+ */
+eval-x:x:/+/**/_id
+create-widgets
+  micro.widgets.modal:sulphur-supply-file-info
+    widgets
+      micro.widgets.wizard-form:sulphur.supply-file-info-values
+        h3
+          innerValue:File information
+        text:sulphur-file-name
+          info:Name
+          .data-field:name
+          onkeydown:@"if (event.keyCode == 13) {p5.$('sulphur-save-file-info').raise('onclick');return false;}"
+          oninit
+
+            /*
+             * Setting initial focus to "name" textbox.
+             */
+            micro.page.set-focus:x:/../*/_event?value
+
+        label
+          for:sulphur-file-description
+          innerValue:Description
+        textarea:sulphur-file-description
+          info:Description ...
+          .data-field:description
+          title:Feel free to supply Markdown here if you wish ...
+        div
+          class:right
+          widgets
+            button:sulphur-save-file-info
+              innerValue:Save
+              style:"margin-bottom:0;"
+              onclick
+
+                /*
+                 * Forward evaluated above ...
+                 */
+                _id:x:/../*/id?value
+
+                /*
+                 * Serializing form data, and saving to database.
+                 */
+                micro.widgets.wizard-form.value:sulphur.supply-file-info-values
+                p5.mysql.connect:[sulphur]
+                  p5.mysql.update:@"update files set name = @name, description = @description where id = @id"
+                    @name:x:/@micro.widgets.wizard-form.value/*/name?value
+                    @description:x:/@micro.widgets.wizard-form.value/*/description?value
+                    @id:x:/@_id?value
+
+                /*
+                 * Deleting modal widget, and re-databinding grid.
+                 */
+                delete-widget:sulphur-supply-file-info
+                micro.evaluate.file:@SULPHUR/databind-files.hl

@@ -1,0 +1,67 @@
+﻿
+/*
+ * File responsible for databinding files in the main grid.
+ *
+ * Requires no arguments, but you can optionally pass in [offset] and [filter] when invoking file,
+ * to start out at a specific page, with a specified filter condition.
+ */
+.defaults
+  offset:int:0
+
+
+
+
+
+/*
+ * Sanity checking optional arguments.
+ */
+micro.lambda.contract.optional:x:/..
+  offset:long
+  filter
+
+
+
+
+
+/*
+ * Selecting files user has access to according to [filter] and [offset].
+ */
+p5.mysql.connect:[sulphur]
+  p5.mysql.select:@"select * from files order by id desc limit 10 offset @offset"
+    @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
+
+  /*
+   * Looping through each result from above, and creating one record for each result.
+   */
+  for-each:x:/@p5.mysql.select/*
+    eval-x:x:/+/*/*/*(/Name|/User|/**(/_prefix|/_filename))
+    add:x:/..p5.mysql.connect/*/micro.widgets.grid.databind
+      src
+        item
+          Name:x:/@_dp/#/*/name?value
+          User:x:/@_dp/#/*/username?value
+          Download
+            widgets
+              a
+                href:#
+                role:button
+                innerValue:@"<span class=""icon-download""></span>"
+                onclick
+
+                  /*
+                   * Forward evaluated above.
+                   */
+                  _prefix:x:/@_dp/#/*/prefix?value
+                  _filename:x:/@_dp/#/*/filename?value
+
+                  /*
+                   * Downloading file to user's client.
+                   */
+                  create-widget
+                    element:pre
+                    innerValue:x:/..
+
+  /*
+   * Databinding files grid.
+   */
+  micro.widgets.grid.databind:sulphur-files-grid

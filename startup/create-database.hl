@@ -2,26 +2,38 @@
 /*
  * Creating database if it doesn't exist, assuming connection string in web.config exists, and is named "sulphur".
  */
-p5.mysql.connect:[sulphur]
-  p5.mysql.execute:@"
+try
+  p5.mysql.connect:[sulphur]
+    p5.mysql.execute:@"
 
 CREATE TABLE IF NOT EXISTS `files` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `filename` varchar(1024) NOT NULL,
   `prefix` varchar(45) NOT NULL,
-  `folder` varchar(1024) NOT NULL,
   `username` varchar(500) NOT NULL,
-  `public` int(10) unsigned NOT NULL,
+  `name` varchar(4096) NOT NULL,
+  `description` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `shares` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `fileid` int(10) unsigned NOT NULL,
-  `username` varchar(500) NOT NULL,
-  `type` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_shares_files_idx` (`fileid`),
-  CONSTRAINT `fk_shares_files` FOREIGN KEY (`fileid`) REFERENCES `files` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 "
+
+catch
+
+  /*
+   * Attempting to create database, unless this is our second invocation, for then
+   * to invoke self again, for simplicity reasons.
+   */
+  if:x:/../*/second?value
+    not
+
+    /*
+     * Creating database schema.
+     */
+    p5.mysql.connect:[sys]
+      p5.mysql.execute:@"CREATE SCHEMA `sulphur`;"
+
+    /*
+     * Invoking self, with [second] being true, to avoid never ending recursion.
+     */
+    micro.evaluate.file:x:/..?name
+      second:bool:true
