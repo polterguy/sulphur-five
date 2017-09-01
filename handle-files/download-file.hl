@@ -1,0 +1,44 @@
+﻿
+/*
+ * Invoked when a file should be downloaded.
+ *
+ * Expects [id] being database id of file.
+ */
+
+
+
+
+
+/*
+ * Selecting file from database.
+ */
+p5.mysql.connect:[sulphur]
+  p5.mysql.select:@"select * from files where id = @id"
+    @id:x:/../*/id?value
+
+  /*
+   * Checking file type, and if it is either an image or a movie,
+   * we simply display it "inline" in a widget of appropriate choice.
+   */
+  split:x:/@p5.mysql.select/*/*/filename?value
+    =:.
+
+  /*
+   * Making sure we do a lowers comparison of file extension.
+   */
+  set:x:/@split/0/-?name
+    to-lower:x:/@split/0/-?name
+
+  /*
+   * Redirecting client such that download begins.
+   */
+  p5.web.get-location
+  p5.html.url-encode:x:/@p5.mysql.select/*/*/filename?value
+  p5.html.url-encode:/common/documents/private/{0}-{1}
+    :x:/@p5.mysql.select/*/*/prefix?value
+    :x:/@p5.mysql.select/*/*/filename?value
+  p5.web.set-location:{0}?download=true&original={1}&file={2}
+    :x:/@p5.web.get-location?value
+    :x:/@p5.html.url-encode/@p5.html.url-encode?value
+    :x:/@p5.html.url-encode?value
+

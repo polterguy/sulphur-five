@@ -109,9 +109,24 @@ if:x:/-/*?value
       src:x:/@_dp/#?value
 
   /*
+   * Checking if this is a download of file.
+   */
+  p5.web.query.get:download
+  if:x:/-/*?value
+    =:true
+
+    /*
+     * This is a download, making sure we set "Content-Disposition" header correctly.
+     */
+    p5.web.query.get:original
+    p5.web.header.set:Content-Disposition
+      src:@"attachment; filename=""{0}"""
+        :x:/@p5.web.query.get/*?value
+
+  /*
    * Echoing file to caller.
    */
-  p5.web.echo-file:x:/@p5.web.query.get/*?value
+  p5.web.echo-file:x:/../*/p5.web.query.get/*?value
   return
 
 

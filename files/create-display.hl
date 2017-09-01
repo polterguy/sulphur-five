@@ -90,7 +90,34 @@ create-widget:sulphur-main-wrapper
       message:Please wait while we're uploading your file ...
       style:"display:none;"
     div
-      class:col-100
+      class:col-70
+      widgets
+        div
+          class:fill strip
+          widgets
+            input:sulphur-search
+              placeholder:Search ...
+              type:text
+              onkeydown:@"if (event.keyCode == 13) {p5.$('sulphur-search-button').raise('onclick');return false;}"
+              oninit
+
+                /*
+                 * Setting initial focus to search textbox.
+                 */
+                micro.page.set-focus:x:/../*/_event?value
+
+            button:sulphur-search-button
+              innerValue:@"<span class=""icon-search""></span>"
+              onclick
+
+                /*
+                 * Performing search.
+                 * TODO: Implement ...!!
+                 */
+                micro.windows.info:Search ...
+
+    div
+      class:col-30
       widgets
         div
           class:right

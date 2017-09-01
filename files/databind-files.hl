@@ -67,6 +67,21 @@ p5.mysql.connect:[sulphur]
                 label
                   class:sulphur-uploaded
                   innerValue:x:/@p5.types.date.format?value
+                a
+                  href:#
+                  role:button
+                  class:sulphur-download-file
+                  innerValue:@"<span class=""icon-download""></span>"
+                  onclick
+
+                    /*
+                     * Downloading file.
+                     */
+                    _id:x:/@_dp/#/*/id?value
+                    eval-x:x:/+/*
+                    micro.evaluate.file:@SULPHUR/handle-files/download-file.hl
+                      id:x:/@_id?value
+
                 div
                   innerValue:x:/@markdown2html?value
 

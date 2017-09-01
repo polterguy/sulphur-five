@@ -21,19 +21,35 @@
 }
 .sulphur-username {
     position:absolute;
-    top:.5rem;
-    right:.5rem;
+    bottom:0;
+    left:1rem;
     font-weight:normal;
     color:#d0d0d0;
     font-style:italic;
 }
 .sulphur-uploaded {
     position:absolute;
-    bottom:.5rem;
+    bottom:0;
     right:.5rem;
     font-weight:normal;
     color:#d0d0d0;
     font-style:italic;
+}
+.sulphur-download-file {
+    position:absolute;
+    top:0;
+    right:0;
+    padding:10px 25px;
+    border-left:solid 1px var(--wid-border-col);
+    border-bottom:solid 1px var(--wid-border-col);
+    border-bottom-left-radius:var(--border-radius);
+    background:linear-gradient(#fefefe, #fafafa);
+}
+.sulphur-download-file:focus,
+.sulphur-download-file:hover,
+.sulphur-download-file:active {
+    box-shadow:-2px 2px 5px rgba(0,0,0,.2);
+    transition:box-shadow .2s;
 }
 .sulphur-preview-file {
     position:fixed;
