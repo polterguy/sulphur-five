@@ -2,6 +2,9 @@
 /*
  * Main CSS file for Sulphur Five.
  */
+.container {
+    padding-bottom:150px;
+}
 .sulphur-file-item {
     min-height:250px;
     display:block;
