@@ -24,10 +24,32 @@ micro.lambda.contract.optional:x:/..
 
 
 /*
+ * Checking if a filter was provided.
+ */
+_filter
+if:x:/../*/filter?value
+
+  /*
+   * Filter was supplied, making sure we use it.
+   */
+  set:x:/@_filter?value
+    src:" where filename like @filter or username like @filter or name like @filter or description like @filter"
+  eval-x:x:/+/*/*
+  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
+    src
+      @filter:"%{0}%"
+        :x:/../*/filter?value
+
+
+
+
+
+/*
  * Selecting files user has access to according to [filter] and [offset].
  */
 p5.mysql.connect:[sulphur]
-  p5.mysql.select:@"select * from files order by id desc limit 10 offset @offset"
+  p5.mysql.select:@"select * from files{0} order by id desc limit 10 offset @offset"
+    :x:/@_filter?value
     @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
 
   /*
@@ -62,11 +84,10 @@ p5.mysql.connect:[sulphur]
                 h3
                   innerValue:x:/@_dp/#/*/name?value
                 label
-                  class:sulphur-username
-                  innerValue:x:/@_dp/#/*/username?value
-                label
-                  class:sulphur-uploaded
-                  innerValue:x:/@p5.types.date.format?value
+                  class:sulphur-meta
+                  innerValue:{0} - {1}
+                    :x:/@_dp/#/*/username?value
+                    :x:/@p5.types.date.format?value
                 a
                   href:#
                   role:button

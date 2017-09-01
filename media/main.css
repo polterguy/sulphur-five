@@ -19,15 +19,7 @@
     transition-duration:.2s;
     transition-timing-function:ease-in-out;
 }
-.sulphur-username {
-    position:absolute;
-    bottom:0;
-    left:1rem;
-    font-weight:normal;
-    color:#d0d0d0;
-    font-style:italic;
-}
-.sulphur-uploaded {
+.sulphur-meta {
     position:absolute;
     bottom:0;
     right:.5rem;

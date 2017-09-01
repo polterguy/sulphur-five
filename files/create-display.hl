@@ -112,9 +112,17 @@ create-widget:sulphur-main-wrapper
 
                 /*
                  * Performing search.
-                 * TODO: Implement ...!!
                  */
-                micro.windows.info:Search ...
+                get-widget-property:sulphur-search
+                  value
+                eval-x:x:/+/*
+                micro.evaluate.file:@SULPHUR/files/databind-files.hl
+                  filter:x:/@get-widget-property/*/*?value
+
+                /*
+                 * Setting focus to search textbox again.
+                 */
+                micro.page.set-focus:sulphur-search
 
     div
       class:col-30
