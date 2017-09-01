@@ -55,7 +55,10 @@ p5.web.include-css-file:@SULPHUR/media/main.css
  * forcing the user to login before we proceed.
  */
 whoami
+select-data:x:/*/*/sulphur.settings
 if:x:/@whoami/*/default?value
+  and:x:/@select-data/*/*/viewers?value
+    !=:guest
 
   /*
    * User is not logged in.

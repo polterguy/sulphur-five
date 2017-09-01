@@ -11,13 +11,21 @@
  * Retrieving settings from p5.data.
  */
 select-data:x:/*/*/sulphur.settings
+
+
+
+
+
+/*
+ * Figuring out who can upload files.
+ */
 if:x:/@select-data/*/*/uploaders?value
   =:users
 
   /*
    * Any user can upload files.
    */
-  add:x:/../*/create-widgets/**/=users
+  add:x:/../*/create-widgets/**/=uploaders/./**/=users
     src:checked
 
 else
@@ -25,9 +33,32 @@ else
   /*
    * Only root can upload files.
    */
-  add:x:/../*/create-widgets/**/=root
+  add:x:/../*/create-widgets/**/=uploaders/./**/=root
     src:checked
 
+
+
+
+
+/*
+ * Figuring out who can view files.
+ */
+if:x:/@select-data/*/*/viewers?value
+  =:reg-users
+
+  /*
+   * Any user can upload files.
+   */
+  add:x:/../*/create-widgets/**/=viewers/./**/=reg-users
+    src:checked
+
+else
+
+  /*
+   * Only root can upload files.
+   */
+  add:x:/../*/create-widgets/**/=viewers/./**/=guest
+    src:checked
 
 
 
@@ -41,11 +72,21 @@ create-widgets
       h3
         innerValue:Settings
       micro.widgets.wizard-form:sulphur-settings
+        p
+          innerValue:Who can upload files to your server?
         radio-group
           .data-field:uploaders
           options
-            Any user can upload:users
+            Any registered user can upload:users
             Only root can upload:root
+        p
+          innerValue:@"Who can view files on your server? Notice, if you set this to anybody, then also unregistered users 
+will have access to view and download files, which basically means all your files are publicly available."
+        radio-group
+          .data-field:viewers
+          options
+            Anybody can view:guest
+            Only users can view:reg-users
         div
           class:right
           widgets
@@ -73,7 +114,8 @@ create-widgets
                     update-data:x:/*/*/sulphur.settings
                       src
                         sulphur.settings
-                          uploaders:x:/@micro.widgets.wizard-form.value/*?value
+                          uploaders:x:/@micro.widgets.wizard-form.value/*/uploaders?value
+                          viewers:x:/@micro.widgets.wizard-form.value/*/viewers?value
 
                     /*
                      * Deleting modal settings widget.
