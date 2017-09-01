@@ -8,16 +8,10 @@
 
 
 /*
- * Clearing main container.
- */
-clear-widget:sulphur-main-container
-
-
-
-
-
-/*
  * Checking settings to figure out who can upload files.
+ *
+ * This is necessary in order to be able to enable/disable uploading of files,
+ * according to restrictions in settings of the app.
  */
 select-data:x:/*/*/sulphur.settings
 whoami
@@ -29,10 +23,8 @@ if:x:/@whoami/*/role?value
       =:users
 
   /*
-   * Including JavaScript necessary to handle uploading of files.
-   *
-   * This is done in an Ajax request invoking [.onupload] on a input element,
-   * on form which is actually hidden, and exclusively handled using JavaScript.
+   * User is either root, or everybody is allowed to upload file.
+   * Regardless, we include the necessary JavaScript to handle uploading of files.
    */
   p5.web.include-javascript:@"
 p5.sulphur_upload_files = function(e) {
@@ -60,9 +52,14 @@ p5.sulphur_upload_files = function(e) {
 else
 
   /*
-   * Only root can upload.
+   * User is not allowed to upload files, hence we remove all traces of logic
+   * used for enabling uploading of files.
+   *
+   * This includes removing the uploader "obscurer", in addition to the actual
+   * file input element, which encapsulates uploading of files, in addition to
+   * the button that triggers our "browse for file" dialogue.
    */
-  set:x:/../*/create-widget/*/widgets/*(/micro.widgets.obscurer|/div/*/widgets/*/div/*/widgets/*/div/*/widgets/*/button/=sulphur-upload-widget)
+  set:x:/../*/create-widget/*/widgets/*(/micro.widgets.obscurer|/**/button/=sulphur-upload-widget|/**/input/=sulphur-upload-file-input)
 
 
 
@@ -73,6 +70,11 @@ else
  */
 if:x:/@whoami/*/role?value
   !=:root
+
+  /*
+   * User is not root, hence we entirely remove the button that allows editing
+   * of app's settings and configuration.
+   */
   set:x:/../*/create-widget/**/button/=sulphur-settings-button
 
 
@@ -82,19 +84,31 @@ if:x:/@whoami/*/role?value
 /*
  * Creating main display.
  */
-create-widget:sulphur-main-wrapper
+create-widget
   parent:sulphur-main-container
   class:row
   widgets
+
+    /*
+     * Obscurer that obscures page during uploading of file(s).
+     */
     micro.widgets.obscurer:sulphur-upload-obscurer
       message:Please wait while we're uploading your file ...
       style:"display:none;"
+
+    /*
+     * Wraps our search textbox and button.
+     */
     div
       class:col-70
       widgets
         div
           class:fill strip
           widgets
+
+            /*
+             * Search textbox.
+             */
             input:sulphur-search
               placeholder:Search ...
               type:text
@@ -106,6 +120,9 @@ create-widget:sulphur-main-wrapper
                  */
                 micro.page.set-focus:x:/../*/_event?value
 
+            /*
+             * Search button.
+             */
             button:sulphur-search-button
               innerValue:@"<span class=""icon-search""></span>"
               onclick
@@ -124,6 +141,10 @@ create-widget:sulphur-main-wrapper
                  */
                 micro.page.set-focus:sulphur-search
 
+    /*
+     * Wrapper for settings button, upload button, home button, and file input
+     * element, that encapsulates uploading of files from the client.
+     */
     div
       class:col-30
       widgets
@@ -133,7 +154,7 @@ create-widget:sulphur-main-wrapper
 
             /*
              * Hidden file input element, handled through JavaScript, that allows user
-             * to add attachments to his email.
+             * to upload files.
              */
             input:sulphur-upload-file-input
               style:"display:none;"
@@ -143,46 +164,30 @@ create-widget:sulphur-main-wrapper
               .onupload
 
                 /*
-                 * Retrieving the file name and content.
+                 * Retrieving the file name, and content, and base64 decoding 
+                 * file's content, before we invoke file responsible for saving
+                 * file, and inserting record into database.
                  */
                 p5.web.post.get:sulphur-file-name
                 p5.web.post.get:sulphur-file-content
+                p5.string.decode-base64:x:/@p5.web.post.get/*/sulphur-file-content?value
 
                 /*
-                 * Creating a random prefix, decoding vile's content, 
-                 * and saving file to common private folder, to make sure 
-                 * it's not accessible, even with a direct link.
-                 */
-                p5.string.decode-base64:x:/../*/p5.web.post.get/*/sulphur-file-content?value
-                p5.types.guid.new
-                save-file:/common/documents/private/{0}-{1}
-                  :x:/@p5.types.guid.new?value
-                  :x:/../*/p5.web.post.get/*/sulphur-file-name?value
-                  src:x:/@p5.string.decode-base64?value
-
-                /*
-                 * Inserting entry for file into database.
-                 */
-                whoami
-                p5.mysql.connect:[sulphur]
-                  p5.mysql.insert:@"insert into files (filename, prefix, username, name, description) values(@filename, @prefix, @username, @name, @description)"
-                    @filename:x:/../*/p5.web.post.get/*/sulphur-file-name?value
-                    @prefix:x:/@p5.types.guid.new?value
-                    @username:x:/@whoami/*/username?value
-                    @name:"Default name, please change ..."
-                    @description:"Default description, please change ..."
-
-                /*
-                 * Asking user to supply some description, and a name for file.
+                 * Invoking file responsible for saving file and inserting a record for it
+                 * into our database.
                  */
                 eval-x:x:/+/*
-                micro.evaluate.file:@SULPHUR/files/supply-file-info.hl
-                  id:x:/@p5.mysql.connect/*/p5.mysql.insert/*/id?value
+                micro.evaluate.file:@SULPHUR/handle-files/save-file.hl
+                  filename:x:/../*/p5.web.post.get/*/sulphur-file-name?value
+                  content:x:/@p5.string.decode-base64?value
 
                 /*
-                 * Re-databinding grid, now with temporary name.
+                 * Starting editing of file.
                  */
-                micro.evaluate.file:@SULPHUR/files/databind-files.hl
+                p5.web.get-location-url
+                p5.web.set-location:{0}?edit={1}
+                  :x:/@p5.web.get-location-url?value
+                  :x:/@micro.evaluate.file?value
 
             div
               class:strip
@@ -226,7 +231,7 @@ create-widget:sulphur-main-wrapper
                     p5.web.set-location:x:/-?value
 
     div
-      class:col-100
+      class:col-80 offset-10 air-top
       widgets
 
         /*
@@ -234,22 +239,25 @@ create-widget:sulphur-main-wrapper
          */
         container:sulphur-files-grid
           class:row
-          oninit
-
-            /*
-             * Initial databinding of files.
-             */
-            micro.evaluate.file:@SULPHUR/files/databind-files.hl
 
 
 
 
 
 /*
- * Checking to see if there is a "preview" argument, and if so, making sure we
- * display that file in a "modal preview container".
+ * Initial databinding of files.
  */
-p5.web.query.get:preview
+micro.evaluate.file:@SULPHUR/files/databind-files.hl
+
+
+
+
+
+/*
+ * Checking to see if there is a "edit" argument, and if so, making sure we
+ * display that file in a "modal edit container".
+ */
+p5.web.query.get:edit
 if:x:/@p5.web.query.get/*?value
 
   /*
@@ -271,7 +279,7 @@ if:x:/@p5.web.query.get/*?value
      */
     eval-x:x:/+/**/_id
     create-widget
-      class:sulphur-preview-file
+      class:sulphur-file-editor
       onclick
 
         /*
@@ -283,7 +291,8 @@ if:x:/@p5.web.query.get/*?value
       widgets
         container
           role:button
-          class:sulphur-file-item sulphur-file-item-preview rounded shaded air-inner
+          class:sulphur-file-item sulphur-file-item-edit rounded shaded air-inner
+          onclick:"event.stopPropagation(true);return false;"
           widgets
             h3
               innerValue:x:/@p5.mysql.select/*/*/name?value
@@ -304,9 +313,10 @@ if:x:/@p5.web.query.get/*?value
                  * Downloading file.
                  */
                 _id:x:/@p5.mysql.select/*/*/id?value
-                eval-x:x:/+/*
-                micro.evaluate.file:@SULPHUR/handle-files/download-file.hl
-                  id:x:/@_id?value
+                p5.web.get-location-url
+                p5.web.set-location:{0}?download={1}
+                  :x:/@p5.web.get-location-url?value
+                  :x:/@_id?value
 
             div
               innerValue:x:/@markdown2html?value

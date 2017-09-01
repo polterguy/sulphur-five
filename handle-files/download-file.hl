@@ -10,35 +10,97 @@
 
 
 /*
- * Selecting file from database.
+ * First we need to figure out file's path, etc, by selecting its record from the database.
  */
 p5.mysql.connect:[sulphur]
   p5.mysql.select:@"select * from files where id = @id"
     @id:x:/../*/id?value
 
-  /*
-   * Checking file type, and if it is either an image or a movie,
-   * we simply display it "inline" in a widget of appropriate choice.
-   */
-  split:x:/@p5.mysql.select/*/*/filename?value
-    =:.
 
-  /*
-   * Making sure we do a lowers comparison of file extension.
-   */
-  set:x:/@split/0/-?name
-    to-lower:x:/@split/0/-?name
 
-  /*
-   * Redirecting client such that download begins.
-   */
-  p5.web.get-location-url
-  p5.html.url-encode:x:/@p5.mysql.select/*/*/filename?value
-  p5.html.url-encode:/common/documents/private/{0}-{1}
-    :x:/@p5.mysql.select/*/*/prefix?value
-    :x:/@p5.mysql.select/*/*/filename?value
-  p5.web.set-location:{0}?download=true&original={1}&file={2}
-    :x:/@p5.web.get-location-url?value
-    :x:/@p5.html.url-encode/@p5.html.url-encode?value
-    :x:/@p5.html.url-encode?value
 
+
+/*
+ * TODO: Verify user has access.
+ */
+
+
+
+
+
+/*
+ * Then figuring out HTTP headers to set according to file's extension.
+ */
+split:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
+  =:.
+to-lower:x:/@split/0/-?name
+load-file:@SULPHUR/configuration/mime-types.hl
+
+
+
+
+
+/*
+ * Setting "Content-Type" header.
+ */
+p5.web.header.set:Content-Type
+  src:{0}/{1}
+    :x:/@load-file/*/*/{0}/*?name
+      :x:/@to-lower?value
+    :x:/@load-file/*/*/{0}/*?value
+      :x:/@to-lower?value
+
+
+
+
+
+/*
+ * Looping through all other HTTP headers according to configuration.
+ */
+for-each:x:/@load-file/*/*/{0}/*/*
+  :x:/@to-lower?value
+  p5.web.header.set:x:/@_dp/#?name
+    src:x:/@_dp/#?value
+
+
+
+
+
+/*
+ * Making sure we set "Content-Disposition" header correctly.
+ */
+p5.web.header.set:Content-Disposition
+  src:@"attachment; filename=""{0}"""
+    :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
+
+
+
+
+
+/*
+ * Figuring out if this is a "public", "private" or "protected" file,
+ * which controls where we should be looking for it.
+ */
+_folder
+switch:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/type?value
+  case:private
+    set:x:/@_folder?value
+      src:~/documents/private/
+  case:protected
+    set:x:/@_folder?value
+      src:/common/documents/private/
+  case:public
+    set:x:/@_folder?value
+      src:~/documents/public/
+
+
+
+
+
+/*
+ * Echoing file to caller.
+ */
+p5.web.echo-file:{0}{1}-{2}
+  :x:/@_folder?value
+  :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
+  :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value

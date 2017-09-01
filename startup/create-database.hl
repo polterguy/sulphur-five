@@ -8,12 +8,13 @@ try
 
 CREATE TABLE IF NOT EXISTS `files` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(4096) NOT NULL,
+  `description` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `uploaded` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `filename` varchar(1024) NOT NULL,
   `prefix` varchar(45) NOT NULL,
   `username` varchar(500) NOT NULL,
-  `name` varchar(4096) NOT NULL,
-  `uploaded` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `description` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(45) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 "

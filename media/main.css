@@ -5,20 +5,8 @@
 .sulphur-file-item {
     min-height:250px;
     display:block;
-    cursor:pointer;
-    transition-property:box.shadow;
-    transition-duration:.2s;
-    transition-timing-function:ease-in-out;
     position:relative;
     background-color:#fefefe;
-}
-.sulphur-file-item:focus,
-.sulphur-file-item:active,
-.sulphur-file-item:hover {
-    box-shadow:2px 2px 5px rgba(0,0,0,.7);
-    transition-property:box.shadow;
-    transition-duration:.2s;
-    transition-timing-function:ease-in-out;
 }
 .sulphur-meta {
     position:absolute;
@@ -45,7 +33,27 @@
     box-shadow:-2px 2px 5px rgba(0,0,0,.2);
     transition:box-shadow .2s;
 }
-.sulphur-preview-file {
+.sulphur-edit-file {
+    position:absolute;
+    bottom:0;
+    left:0;
+    padding:15px 45px;
+    border-right:solid 1px var(--wid-border-col);
+    border-top:solid 1px var(--wid-border-col);
+    border-top-right-radius:var(--border-radius);
+    background:linear-gradient(#fefefe, #fafafa);
+    border-bottom-left-radius:var(--border-radius);
+    cursor:pointer;
+}
+.sulphur-edit-file:focus,
+.sulphur-edit-file:hover,
+.sulphur-edit-file:active {
+    box-shadow:-2px 2px 5px rgba(0,0,0,.2);
+    transition:box-shadow .2s;
+}
+
+
+.sulphur-file-editor {
     position:fixed;
     top:0;
     left:0;
@@ -53,7 +61,7 @@
     height:100%;
     background:rgba(0,0,0,.5);
 }
-.sulphur-file-item-preview {
+.sulphur-file-item-edit {
     max-width:700px;
     width:calc(100% - 2rem);
     margin-left:auto;

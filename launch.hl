@@ -2,21 +2,8 @@
 /*
  * Launcher file for Sulphur Five.
  *
- * This file is evaluated (without any parameters) when the desktop icon for 
- * Sulphur is clicked by the user.
+ * This file is evaluated (without any parameters) when Sulphur is launched by the user.
  */
-
-
-
-
-
-/*
- * Clearing out anything previously added to page, to make sure we start
- * out Sephia with a blank slate.
- */
-clear-widget:cnt
-delete-widget-property:cnt
-  class
 
 
 
@@ -25,10 +12,10 @@ delete-widget-property:cnt
 /*
  * Creating main content container.
  *
- * This is the place where "everything" is stored in Sephia, and is used to display
- * the inbox, Sephia's settings, emails the user is reading, etc, etc, etc.
+ * This is the place where "everything" is stored in Sulphur, and is used to display
+ * the files list. upload button, etc.
  *
- * Notice, we only use one "container" widget from Micro for everything related to Sephia.
+ * Notice, we only use one "container" widget from Micro for everything related to Sulphur.
  */
 create-container-widget:sulphur-main-container
   class:container
@@ -38,7 +25,7 @@ create-container-widget:sulphur-main-container
 
 
 /*
- * Including Micro, and adding Awesome Fonts.
+ * Including Micro, and adding Awesome Fonts, and serious skin.
  */
 p5.web.include-css-file:@MICRO/media/main.css
 p5.web.include-css-file:@MICRO/media/ext.css
@@ -51,8 +38,8 @@ p5.web.include-css-file:@SULPHUR/media/main.css
 
 
 /*
- * Verifying user is logged in, and if not, 
- * forcing the user to login before we proceed.
+ * Verifying user is logged in, or that app is available for everyone,
+ * including guest accounts.
  */
 whoami
 select-data:x:/*/*/sulphur.settings
@@ -61,7 +48,7 @@ if:x:/@whoami/*/default?value
     !=:guest
 
   /*
-   * User is not logged in.
+   * User is not logged in, and app is restricted to only logged in users.
    */
   p5.core.login
 
@@ -75,58 +62,18 @@ if:x:/@whoami/*/default?value
 
 
 /*
- * Checking if this is a request for a file, at which point we return it to client,
- * and return early.
+ * Checking if this is a request for a file, at which point we initiate a file
+ * download request, and return early.
  */
-p5.web.query.get:file
+p5.web.query.get:download
 if:x:/-/*?value
 
   /*
-   * This is a file request, first figuring out HTTP headers to set according
-   * to file's extension.
+   * This is a download request, serving file and returning early.
    */
-  split:x:/@p5.web.query.get/*?value
-    =:.
-  to-lower:x:/@split/0/-?name
-  load-file:@SULPHUR/configuration/mime-types.hl
-
-  /*
-   * Setting "Content-Type" header.
-   */
-  p5.web.header.set:Content-Type
-    src:{0}/{1}
-      :x:/@load-file/*/*/{0}/*?name
-        :x:/@to-lower?value
-      :x:/@load-file/*/*/{0}/*?value
-        :x:/@to-lower?value
-
-  /*
-   * Looping through all other HTTP headers according to configuration.
-   */
-  for-each:x:/@load-file/*/*/{0}/*/*
-    :x:/@to-lower?value
-    p5.web.header.set:x:/@_dp/#?name
-      src:x:/@_dp/#?value
-
-  /*
-   * Checking if this is a download of file.
-   */
-  p5.web.query.get:download
-  if:x:/-/*?value
-    =:true
-
-    /*
-     * This is a download, making sure we set "Content-Disposition" header correctly.
-     */
-    p5.web.query.get:original
-    p5.web.header.set:Content-Disposition
-      src:@"attachment; filename=""{0}"""
-        :x:/@p5.web.query.get/*?value
-
-  /*
-   * Echoing file to caller.
-   */
-  p5.web.echo-file:x:/../*/p5.web.query.get/*?value
+  eval-x:x:/+/*
+  micro.evaluate.file:@SULPHUR/handle-files/download-file.hl
+    id:x:/@p5.web.query.get/*?value
   return
 
 

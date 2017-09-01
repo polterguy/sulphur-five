@@ -1,3 +1,3 @@
 # Sulphur Five
 
-An extremely optimised alternative to DropBox and Google Drive.
+An Open Source alternative to DropBox and Google Drive.

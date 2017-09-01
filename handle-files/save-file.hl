@@ -1,0 +1,47 @@
+﻿
+/*
+ * Invoked when a file should be save on server.
+ *
+ * Expects [filename] and [content] being filename and actual content of file.
+ *
+ * Returns [id] being database ID of file to caller.
+ */
+
+
+
+
+
+/*
+ * Creating a random prefix, decoding file's content, and saving file to private 
+ * documents folder of user, to make sure it's not accessible, even with a direct link.
+ */
+p5.types.guid.new
+save-file:~/documents/private/{0}-{1}
+  :x:/@p5.types.guid.new?value
+  :x:/../*/filename?value
+  src:x:/../*/content?value
+
+
+
+
+
+/*
+ * Inserting entry for file into database.
+ */
+whoami
+p5.mysql.connect:[sulphur]
+  p5.mysql.insert:@"insert into files (filename, prefix, username, name, description, type) values(@filename, @prefix, @username, @name, @description, 'private')"
+    @filename:x:/../*/filename?value
+    @prefix:x:/@p5.types.guid.new?value
+    @username:x:/@whoami/*/username?value
+    @name:"Default name, please change ..."
+    @description:"Default description, please change ..."
+
+
+
+
+
+/*
+ * Returning ID to caller.
+ */
+return:x:/@p5.mysql.connect/*/p5.mysql.insert/*/id?value

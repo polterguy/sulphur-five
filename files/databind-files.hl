@@ -24,7 +24,8 @@ micro.lambda.contract.optional:x:/..
 
 
 /*
- * Checking if a filter was provided.
+ * Checking if a filter was provided, and if so, adding a "where" clause to 
+ * our SQL statement.
  */
 _filter
 if:x:/../*/filter?value
@@ -33,11 +34,13 @@ if:x:/../*/filter?value
    * Filter was supplied, making sure we use it.
    */
   set:x:/@_filter?value
-    src:" where filename like @filter or username like @filter or name like @filter or description like @filter"
+    src:"and filename like @filter or username = @exact or name like @filter or description like @filter"
   eval-x:x:/+/*/*
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
       @filter:"%{0}%"
+        :x:/../*/filter?value
+      @exact:"{0}"
         :x:/../*/filter?value
 
 
@@ -45,66 +48,142 @@ if:x:/../*/filter?value
 
 
 /*
- * Selecting files user has access to according to [filter] and [offset].
+ * Making sure we allow only for viewing files that the user actually has access to.
  */
-p5.mysql.connect:[sulphur]
-  p5.mysql.select:@"select * from files{0} order by id desc limit 10 offset @offset"
-    :x:/@_filter?value
-    @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
+whoami
+_protected
+if:x:/@whoami/*/default?value
+  not
 
   /*
-   * Looping through each result from above, and creating one record for each result.
+   * User is not guest, but an actual logged in user.
+   * Hence giving him access to also "protected" files.
+   */
+  set:x:/@_protected?value
+    src:"or type = 'protected'"
+
+
+
+
+
+/*
+ * Connecting to database and selecting available files for user.
+ */
+p5.mysql.connect:[sulphur]
+  p5.mysql.select:@"select * from files where (username = @username or type = 'public' {0}) {1} order by id desc limit 10 offset @offset"
+    :x:/@_protected?value
+    :x:/@_filter?value
+    @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
+    @username:x:/@whoami/*/username?value
+
+  /*
+   * Looping through each result from above, and creating one widget for each result.
    */
   for-each:x:/@p5.mysql.select/*
+
+    /*
+     * Making sure we transform the description of file from Markdown to HTML.
+     */
     markdown2html:x:/@_dp/#/*/description?value
+
+    /*
+     * Nicely formatting date.
+     */
     p5.types.date.format:x:/@_dp/#/*/uploaded?value
-      format:"d. MMM yyyy - HH:mm"
+      format:"dddd d. MMM yyyy - HH:mm"
+
+    /*
+     * Forward evaluating [add] invocations arguments, and adding a widget into
+     * [create-widgets] invocation below, for creating a widget wrapping file information.
+     */
     eval-x:x:/+/*/*/*/widgets/*/container/*/widgets/*(/h3|/label|/div)/*/innerValue|/+/**/_id
     add:x:/..p5.mysql.connect/*/create-widgets
       src
         container
           parent:sulphur-files-grid
-          class:col-50
+          class:col-100
           widgets
             container
-              role:button
               class:sulphur-file-item rounded shaded air-inner
-              onclick
-
-                /*
-                 * [_id] is forward evaluated above.
-                 *
-                 * Invokes file responsible for handling file.
-                 */
-                _id:x:/@_dp/#/*/id?value
-                p5.web.get-location
-                p5.web.set-location:{0}?preview={1}
-                  :x:/@p5.web.get-location?value
-                  :x:/@_id?value
-
               widgets
                 h3
                   innerValue:x:/@_dp/#/*/name?value
                 label
                   class:sulphur-meta
-                  innerValue:{0} - {1}
+                  innerValue:{0} ({1}) - {2}
                     :x:/@_dp/#/*/username?value
+                    :x:/@_dp/#/*/type?value
                     :x:/@p5.types.date.format?value
                 a
-                  href:#
-                  role:button
                   class:sulphur-download-file
                   innerValue:@"<span class=""icon-download""></span>"
                   title:Download file ...
-                  onclick
+                  oninit
 
                     /*
-                     * Downloading file.
+                     * Changing [href] of widget to allow downloading of file.
                      */
                     _id:x:/@_dp/#/*/id?value
-                    eval-x:x:/+/*
-                    micro.evaluate.file:@SULPHUR/handle-files/download-file.hl
-                      id:x:/@_id?value
+                    p5.web.get-location-url
+                    set-widget-property:x:/../*/_event?value
+                      href:{0}?download={1}
+                        :x:/@p5.web.get-location-url?value
+                        :x:/@_id?value
+
+                a
+                  class:sulphur-edit-file
+                  innerValue:@"<span class=""icon-pencil""></span>"
+                  title:Edit file ...
+                  oninit
+
+                    /*
+                     * Forward evaluated above.
+                     */
+                    _id:x:/@_dp/#/*/id?value
+
+                    /*
+                     * Verifying user is allowed to editing file, and if not,
+                     * simply removing widget.
+                     */
+                    whoami
+                    if:x:/@whoami/*/default?value
+                      =:guest
+
+                      /*
+                       * Guests are never allowed to edit files.
+                       */
+                      delete-widget:x:/../*/_event?value
+                      return
+
+                    if:x:/@whoami/*/role?value
+                      !=:root
+
+                      /*
+                       * User is not root, therefor we must check if user is the
+                       * owner of the file, and if not, we don't allow him to edit
+                       * the file.
+                       */
+                      p5.mysql.connect:[sulphur]
+                        p5.mysql.scalar:@"select username from files where id = @id"
+                          @id:x:/@_id?value
+                        if:x:/@p5.mysql.scalar?value
+                          !=:x:/@whoami/*/username?value
+
+                          /*
+                           * User does not own file, deleting widget, and returning
+                           * early.
+                           */
+                          delete-widget:x:/../*/_event?value
+                          return
+
+                    /*
+                     * Changing [href] of widget to allow for editing the file.
+                     */
+                    p5.web.get-location-url
+                    set-widget-property:x:/../*/_event?value
+                      href:{0}?edit={1}
+                        :x:/@p5.web.get-location-url?value
+                        :x:/@_id?value
 
                 div
                   innerValue:x:/@markdown2html?value
