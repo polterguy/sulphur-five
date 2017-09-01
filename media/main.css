@@ -69,3 +69,21 @@
     margin-top:5rem;
     cursor:default;
 }
+.sulphur-close-file-editor {
+    position:absolute;
+    bottom:0;
+    right:0;
+    padding:15px 45px;
+    border-left:solid 1px var(--wid-border-col);
+    border-top:solid 1px var(--wid-border-col);
+    border-top-left-radius:var(--border-radius);
+    background:linear-gradient(#fefefe, #fafafa);
+    border-bottom-right-radius:var(--border-radius);
+    cursor:pointer;
+}
+.sulphur-close-file-editor:focus,
+.sulphur-close-file-editor:hover,
+.sulphur-close-file-editor:active {
+    box-shadow:-2px 2px 5px rgba(0,0,0,.2);
+    transition:box-shadow .2s;
+}

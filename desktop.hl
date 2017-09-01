@@ -56,10 +56,41 @@ container
 
 
         /*
-         * Doing a count of files, and adding to icon.
+         * Doing a count of files that current user (or guest) is allowed to access,
+         * and adding the count to icon, to illustrate how many available files there exists.
          */
+        _sql
+        if:x:/@whoami/*/default?value
+
+          /*
+           * User is not logged in, only showing publicly available files.
+           */
+          set:x:/@_sql?value
+            src:@"select count(*) from files where type = 'public'"
+
+        else-if:x:/@whoami/*/role?value
+          =:root
+
+          /*
+           * User is root, displaying all files in system.
+           */
+          set:x:/@_sql?value
+            src:@"select count(*) from files"
+
+        else
+
+          /*
+           * User is logged in, but not root, displaying all protected files, public
+           * files, and files belonging to user.
+           */
+          set:x:/@_sql?value
+            src:@"select count(*) from files where type = 'public' or type = 'protected' or username = @username"
+          add:x:/../**/p5.mysql.scalar
+            src
+              @username:x:/@whoami/*/username?value
+
         p5.mysql.connect:[sulphur]
-          p5.mysql.scalar:@"select count(*) from files"
+          p5.mysql.scalar:x:/@_sql?value
 
           /*
            * Setting widget's innerValue, making sure we drop 'count' altogether, if it's zero.

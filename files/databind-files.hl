@@ -57,6 +57,7 @@ if:x:/@whoami/*/default?value
 
   /*
    * User is not guest, but an actual logged in user.
+   *
    * Hence giving him access to also "protected" files.
    */
   set:x:/@_protected?value
@@ -99,6 +100,10 @@ p5.mysql.connect:[sulphur]
     eval-x:x:/+/*/*/*/widgets/*/container/*/widgets/*(/h3|/label|/div)/*/innerValue|/+/**/_id
     add:x:/..p5.mysql.connect/*/create-widgets
       src
+
+        /*
+         * Actual wrapper for entire file widget.
+         */
         container
           parent:sulphur-files-grid
           class:col-100
@@ -106,14 +111,28 @@ p5.mysql.connect:[sulphur]
             container
               class:sulphur-file-item rounded shaded air-inner
               widgets
+
+                /*
+                 * Displays name of file.
+                 *
+                 * Not filename, but friendly "header" for file that is.
+                 */
                 h3
                   innerValue:x:/@_dp/#/*/name?value
+
+                /*
+                 * Meta information, username, protection, and upload date.
+                 */
                 label
                   class:sulphur-meta
                   innerValue:{0} ({1}) - {2}
                     :x:/@_dp/#/*/username?value
                     :x:/@_dp/#/*/type?value
                     :x:/@p5.types.date.format?value
+
+                /*
+                 * Download file hyperlink.
+                 */
                 a
                   class:sulphur-download-file
                   innerValue:@"<span class=""icon-download""></span>"
@@ -130,6 +149,11 @@ p5.mysql.connect:[sulphur]
                         :x:/@p5.web.get-location-url?value
                         :x:/@_id?value
 
+
+                /*
+                 * Edit file widget, only visible if user is root, or file belongs
+                 * to currently logged in user.
+                 */
                 a
                   class:sulphur-edit-file
                   innerValue:@"<span class=""icon-pencil""></span>"
@@ -185,11 +209,14 @@ p5.mysql.connect:[sulphur]
                         :x:/@p5.web.get-location-url?value
                         :x:/@_id?value
 
+                /*
+                 * Description for file.
+                 */
                 div
                   innerValue:x:/@markdown2html?value
 
   /*
-   * Databinding files grid.
+   * Clearing widget's old content, and re-databinding files grid.
    */
   clear-widget:sulphur-files-grid
   create-widgets

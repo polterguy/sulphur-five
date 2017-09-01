@@ -91,7 +91,7 @@ switch:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/type?value
       src:/common/documents/private/
   case:public
     set:x:/@_folder?value
-      src:~/documents/public/
+      src:/common/documents/public/
 
 
 
