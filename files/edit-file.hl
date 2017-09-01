@@ -88,7 +88,7 @@ p5.mysql.connect:[sulphur]
            * Protection for file wrapper widget.
            */
           p
-            innerValue:File's protection - Public means accessible to anyone, protected means only accessible for registered users, and private means only accessible for root account(s) and the file's owner.
+            innerValue:@"Public means accessible to anyone, protected means only accessible for registered users, and private means only accessible for the file's owner."
           div
             style:"margin-bottom:1rem;"
             oninit
