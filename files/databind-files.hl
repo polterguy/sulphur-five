@@ -72,13 +72,12 @@ p5.mysql.connect:[sulphur]
               onclick
 
                 /*
-                 * Forward evaluated above.
+                 * [_id] is forward evaluated above.
+                 *
                  * Invokes file responsible for handling file.
                  */
                 _id:x:/@_dp/#/*/id?value
-                eval-x:x:/+/*
-                micro.evaluate.file:@SULPHUR/handle-files/handle-file.hl
-                  id:x:/@_id?value
+                micro.windows.info:x:/-?value
 
               widgets
                 h3
