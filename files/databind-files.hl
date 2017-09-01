@@ -77,7 +77,10 @@ p5.mysql.connect:[sulphur]
                  * Invokes file responsible for handling file.
                  */
                 _id:x:/@_dp/#/*/id?value
-                micro.windows.info:x:/-?value
+                p5.web.get-location
+                p5.web.set-location:{0}?preview={1}
+                  :x:/@p5.web.get-location?value
+                  :x:/@_id?value
 
               widgets
                 h3
@@ -92,6 +95,7 @@ p5.mysql.connect:[sulphur]
                   role:button
                   class:sulphur-download-file
                   innerValue:@"<span class=""icon-download""></span>"
+                  title:Download file ...
                   onclick
 
                     /*

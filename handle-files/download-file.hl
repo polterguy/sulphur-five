@@ -32,13 +32,13 @@ p5.mysql.connect:[sulphur]
   /*
    * Redirecting client such that download begins.
    */
-  p5.web.get-location
+  p5.web.get-location-url
   p5.html.url-encode:x:/@p5.mysql.select/*/*/filename?value
   p5.html.url-encode:/common/documents/private/{0}-{1}
     :x:/@p5.mysql.select/*/*/prefix?value
     :x:/@p5.mysql.select/*/*/filename?value
   p5.web.set-location:{0}?download=true&original={1}&file={2}
-    :x:/@p5.web.get-location?value
+    :x:/@p5.web.get-location-url?value
     :x:/@p5.html.url-encode/@p5.html.url-encode?value
     :x:/@p5.html.url-encode?value
 

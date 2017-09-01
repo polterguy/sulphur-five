@@ -179,6 +179,11 @@ create-widget:sulphur-main-wrapper
                 micro.evaluate.file:@SULPHUR/files/supply-file-info.hl
                   id:x:/@p5.mysql.connect/*/p5.mysql.insert/*/id?value
 
+                /*
+                 * Re-databinding grid, now with temporary name.
+                 */
+                micro.evaluate.file:@SULPHUR/files/databind-files.hl
+
             div
               class:strip
               style:"display:inline-block;"
@@ -235,3 +240,73 @@ create-widget:sulphur-main-wrapper
              * Initial databinding of files.
              */
             micro.evaluate.file:@SULPHUR/files/databind-files.hl
+
+
+
+
+
+/*
+ * Checking to see if there is a "preview" argument, and if so, making sure we
+ * display that file in a "modal preview container".
+ */
+p5.web.query.get:preview
+if:x:/@p5.web.query.get/*?value
+
+  /*
+   * Opening database connection, and selecting file.
+   */
+  p5.mysql.connect:[sulphur]
+    p5.mysql.select:@"select * from files where id = @id"
+      @id:x:/@p5.web.query.get/*?value
+
+    /*
+     * Formatting values to display to user.
+     */
+    markdown2html:x:/@p5.mysql.select/*/*/description?value
+    p5.types.date.format:x:/@p5.mysql.select/*/*/uploaded?value
+      format:"d. MMM yyyy - HH:mm"
+
+    /*
+     * Displaying widget to user.
+     */
+    eval-x:x:/+/**/_id
+    create-widget
+      class:sulphur-preview-file
+      onclick
+
+        /*
+         * Redirecting user to main Sulphur URL
+         */
+        p5.web.get-location-url
+        p5.web.set-location:x:/-?value
+
+      widgets
+        container
+          role:button
+          class:sulphur-file-item sulphur-file-item-preview rounded shaded air-inner
+          widgets
+            h3
+              innerValue:x:/@p5.mysql.select/*/*/name?value
+            label
+              class:sulphur-meta
+              innerValue:{0} - {1}
+                :x:/@p5.mysql.select/*/*/username?value
+                :x:/@p5.types.date.format?value
+            a
+              href:#
+              role:button
+              class:sulphur-download-file
+              innerValue:@"<span class=""icon-download""></span>"
+              title:Download file ...
+              onclick
+
+                /*
+                 * Downloading file.
+                 */
+                _id:x:/@p5.mysql.select/*/*/id?value
+                eval-x:x:/+/*
+                micro.evaluate.file:@SULPHUR/handle-files/download-file.hl
+                  id:x:/@_id?value
+
+            div
+              innerValue:x:/@markdown2html?value
