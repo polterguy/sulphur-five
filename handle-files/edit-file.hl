@@ -154,7 +154,7 @@ p5.mysql.connect:[sulphur]
            * Protection for file wrapper widget.
            */
           div
-            style:"margin-bottom:1rem;margin-top:-2rem;"
+            style:"margin-bottom:2rem;margin-top:-2rem;"
             oninit
 
               /*
@@ -322,9 +322,89 @@ p5.mysql.connect:[sulphur]
             oninit
 
               /*
-               * Downloading file.
+               * Closing window by redirecting to main app's root URL.
                */
               _id:x:/@p5.mysql.select/*/*/id?value
               p5.web.get-location-url
               set-widget-property:x:/../*/_event?value
                 href:x:/@p5.web.get-location-url?value
+
+          /*
+           * Delete file button.
+           */
+          a
+            href:#
+            class:sulphur-delete-file-editor
+            innerValue:@"<span class=""icon-trash""></span>"
+            title:Delete file ...
+            onclick
+
+              /*
+               * Deleting file and redirecting to main app's root URL.
+               */
+              _id:x:/@p5.mysql.select/*/*/id?value
+              p5.mysql.connect:[sulphur]
+                p5.mysql.transaction.begin
+                  p5.mysql.select:@"select username, prefix, filename, type from files where id = @id"
+                    @id:x:/@_id?value
+                  p5.mysql.delete:@"delete from files where id = @id"
+                    @id:x:/@_id?value
+
+                  /*
+                   * Figuring out file's folder.
+                   */
+                  _folder
+                  if:x:/@p5.mysql.select/*/*/username?value
+                    =:guest
+                    and:x:/@p5.mysql.select/*/*/type?value
+                      =:private
+
+                    /*
+                     * Privately owned guest file.
+                     */
+                    set:x:/@_folder?value
+                      src:/common/documents/private/
+
+                  else-if:x:/@p5.mysql.select/*/*/type?value
+                    =:private
+
+                    /*
+                     * Privately owned user file.
+                     */
+                    set:x:/@_folder?value
+                      src:/users/{0}/documents/private/
+                        :x:/@p5.mysql.select/*/*/username?value
+
+                  else-if:x:/@p5.mysql.select/*/*/type?value
+                    =:protected
+
+                    /*
+                     * Protected user file.
+                     */
+                    set:x:/@_folder?value
+                      src:/common/documents/private/
+
+                  else-if:x:/@p5.mysql.select/*/*/type?value
+                    =:public
+
+                    /*
+                     * Public user file.
+                     */
+                    set:x:/@_folder?value
+                      src:/common/documents/public/
+
+                  delete-file:{0}{1}-{2}
+                    :x:/@_folder?value
+                    :x:/@p5.mysql.select/*/*/prefix?value
+                    :x:/@p5.mysql.select/*/*/filename?value
+
+                  /*
+                   * Committing transaction.
+                   */
+                  p5.mysql.transaction.commit
+
+                  /*
+                   * Reidrecting to app's main root URL.
+                   */
+                  p5.web.get-location-url
+                  p5.web.set-location:x:/-?value

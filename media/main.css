@@ -90,3 +90,21 @@
     box-shadow:-2px 2px 5px rgba(0,0,0,.2);
     transition:box-shadow .2s;
 }
+.sulphur-delete-file-editor {
+    position:absolute;
+    bottom:0;
+    left:0;
+    padding:15px 45px;
+    border-right:solid 1px var(--wid-border-col);
+    border-top:solid 1px var(--wid-border-col);
+    border-top-right-radius:var(--border-radius);
+    background:linear-gradient(#fefefe, #fafafa);
+    border-bottom-left-radius:var(--border-radius);
+    cursor:pointer;
+}
+.sulphur-delete-file-editor:focus,
+.sulphur-delete-file-editor:hover,
+.sulphur-delete-file-editor:active {
+    box-shadow:-2px 2px 5px rgba(0,0,0,.2);
+    transition:box-shadow .2s;
+}
