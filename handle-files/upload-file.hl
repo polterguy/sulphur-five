@@ -80,13 +80,6 @@ if:x:/@select-data/*/*/uploaders?value
       @sha:x:/@p5.crypto.hash.create-sha256-file?value
 
     /*
-     * In case user is a guest, and this is an anonymous dropbox, we set a session
-     * variable, allowing user to edit the file initially (once)!
-     */
-    p5.web.session.set:sulphur.allow-edit
-      src:bool:true
-
-    /*
      * Return database ID of newly uploaded file.
      */
     return:x:/@p5.mysql.insert/*/id?value

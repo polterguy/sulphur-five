@@ -45,7 +45,7 @@ p5.sulphur_upload_files = function(e) {{
         obsc.style.display = 'none';
         if (xhr.status >= 200 && xhr.status < 300) {{
           if (xhr.responseText == 'ERROR') {{
-            p5.$(e.target.id).raise('.onerror');
+            alert('File was not accepted');
             throw 'Could not upload files';
           }} else {{
             if (cur == files.length - 1) {{

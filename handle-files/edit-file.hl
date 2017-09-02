@@ -10,20 +10,13 @@
 
 
 /*
- * First we check if this is an initial upload by an anonymous guest, and if so,
- * we allow him to edit the file, but only once.
- *
- * This is necessary to allow a guest account to edit file initially, if the server
- * is setup to be an "anonymous dropbox file server".
+ * Checking if this is a guest, at which point we simply return immediately.
  */
 whoami
-p5.web.session.get:sulphur.allow-edit
 if:x:/@whoami/*/default?value
-  and:x:/@p5.web.session.get/*?value
-    not
 
   /*
-   * User is guest, and file was not recently uploaded by current session.
+   * User is guest.
    */
   micro.windows.info:Access denied!
     class:micro-windows-info warning
@@ -146,12 +139,13 @@ p5.mysql.connect:[sulphur]
           /*
            * Name textbox.
            */
-          input
+          input:sulphur-file-name-textbox
             type:text
             class:fill
             value:x:/@p5.mysql.select/*/*/name?value
             placeholder:Name of file ...
             title:Name for file
+            onkeydown:@"if (event.keyCode == 13) {p5.$('sulphur-file-name-textbox').raise('onchange');p5.$('sulphur-close-file-editor').raise('.ondone');return false;}"
             oninit
 
               /*
@@ -316,9 +310,6 @@ p5.mysql.connect:[sulphur]
             widgets
               p
                 innerValue:@"Public means accessible to anyone, protected means only accessible for registered users, and private means only accessible for the file's owner."
-              label
-                for:sulphur-rdo-private
-                innerValue:Private
               input:sulphur-rdo-private
                 type:radio
                 name:sulphur-rdo-protection
@@ -331,8 +322,8 @@ p5.mysql.connect:[sulphur]
                     protection:private
 
               label
-                for:sulphur-rdo-protected
-                innerValue:Protected
+                for:sulphur-rdo-private
+                innerValue:Private
               input:sulphur-rdo-protected
                 type:radio
                 name:sulphur-rdo-protection
@@ -345,8 +336,8 @@ p5.mysql.connect:[sulphur]
                     protection:protected
 
               label
-                for:sulphur-rdo-public
-                innerValue:Public
+                for:sulphur-rdo-protected
+                innerValue:Protected
               input:sulphur-rdo-public
                 type:radio
                 name:sulphur-rdo-protection
@@ -358,13 +349,24 @@ p5.mysql.connect:[sulphur]
                   sulphur.edit-file.set-protection
                     protection:public
 
+              label
+                for:sulphur-rdo-public
+                innerValue:Public
           /*
            * Close button.
            */
-          a
+          a:sulphur-close-file-editor
             class:sulphur-close-file-editor
             innerValue:@"<span class=""icon-close""></span>"
             title:Close editor ...
+            .ondone
+
+              /*
+               * Redirecting to app's root URL.
+               */
+              p5.web.get-location-url
+              p5.web.set-location:x:/-?value
+
             oninit
 
               /*

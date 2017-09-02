@@ -87,16 +87,16 @@ create-widgets
           .data-field:uploaders
           options
             Guests can upload files:all
-            Any user can upload:users
+            Only registered users:users
             Only root can upload:root
         p
-          innerValue:@"Who can view files on your server? Notice, if you set this to anybody, then also unregistered users 
-will have access to view and download files, which basically means all your files are publicly available."
+          innerValue:@"Who can view public files on your server? Notice, if you set this to everybody, then also unregistered guests 
+will have access to view and download public files."
         radio-group
           .data-field:viewers
           options
-            Anybody can view:guest
-            Only users can view:reg-users
+            Everybody:guest
+            Only users:reg-users
         div
           class:right
           widgets
