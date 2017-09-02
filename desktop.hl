@@ -6,7 +6,7 @@
 container
   element:a
   class:desktop-app shaded rounded air-inner
-  title:View files
+  title:Files
   oninit
 
     /*
@@ -90,5 +90,5 @@ container
            * Setting widget's innerValue, adding count of files user has access to.
            */
           set-widget-property:x:/../*/_event?value
-            innerValue:@"<span class=""icon-film desktop-app-icon""></span><span style=""position:absolute;top:5px;right:5px;font-size:.8rem;"">{0}</span>"
+            innerValue:@"<span class=""icon-briefcase desktop-app-icon""></span><span style=""position:absolute;top:5px;right:5px;font-size:.8rem;"">{0}</span>"
               :x:/@p5.mysql.scalar?value
