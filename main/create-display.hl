@@ -43,11 +43,15 @@ p5.sulphur_upload_files = function(e) {{
     xhr.onreadystatechange = function() {{
       if (xhr.readyState == 4 && xhr.status == 200) {{
         obsc.style.display = 'none';
-        p5.$(e.target.id).raise('.onupload', {{
-          onbefore:function(pars,evt) {{
-            pars.push(['file-id', xhr.responseText]);
-          }}
-        }});
+        if (xhr.responseText == 'ERROR') {{
+          p5.$(e.target.id).raise('.onerror');
+        }} else {{
+          p5.$(e.target.id).raise('.onupload', {{
+            onbefore:function(pars,evt) {{
+              pars.push(['file-id', xhr.responseText]);
+            }}
+          }});
+        }}
       }}
     }};
     fd.append('file', files[i]);
@@ -170,6 +174,14 @@ create-widget
               type:file
               class:sulphurAttachmentFileInput
               onchange:"p5.sulphur_upload_files(event);"
+              .onerror
+
+                /*
+                 * Invoked when an error occurs during uploading of file.
+                 */
+                micro.windows.info:The server didn't accept your file
+                  class:micro-windows-info warning
+
               .onupload
 
                 /*

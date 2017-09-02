@@ -24,11 +24,19 @@ if:x:/../*/url?value
    * making sure we return the ID of file to client, if it was successfully uploaded.
    */
   try
+
     micro.evaluate.file:@SULPHUR/handle-files/upload-file.hl
     p5.web.echo:x:/-?value
+
   catch
-    p5.web.echo:ERROR:{0}
-      :x:/..catch/*/message?value
+
+    /*
+     * Notice, we do not return the exception message, since that would allow an adversary to
+     * understand what goes wrong, which would widen the attack surface, and compromise the
+     * security of the system!
+     */
+    p5.web.echo:ERROR
+
   return
 
 

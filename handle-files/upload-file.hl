@@ -34,20 +34,50 @@ if:x:/@select-data/*/*/uploaders?value
    *
    * Retrieving file's content, and saving it to correct folder.
    */
-  p5.web.request.get-body
-  p5.mime.parse:x:/@p5.web.request.get-body?value
+  p5.web.request.parse-mime
     attachment-folder:~/documents/private/
+
+  /*
+   * Figuring out SHA value of file, to avoid inserting same file multiple times.
+   */
+  p5.crypto.hash.create-sha256-file:{0}{1}{2}
+    :x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/folder?value
+    :x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/prefix?value
+    :x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
+    hex:true
 
   /*
    * Inserting entry into database.
    */
   p5.mysql.connect:[sulphur]
-    p5.mysql.insert:@"insert into files (filename, prefix, username, name, description, type) values(@filename, @prefix, @username, @name, @description, 'private')"
-      @filename:x:/@p5.mime.parse/*/*/filename?value
-      @prefix:x:/@p5.mime.parse/*/*/filename/*/prefix?value
+
+    /*
+     * Checking if there exists a file with the same SHA value from before, at which point we don't insert the file.
+     */
+    p5.mysql.scalar:@"select count(*) from files where sha = @sha"
+      @sha:x:/@p5.crypto.hash.create-sha256-file?value
+    if:x:/@p5.mysql.scalar?value.int
+      !=:int:0
+
+      /*
+       * File already exists in system.
+       */
+      delete-file:{0}{1}{2}
+        :x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/folder?value
+        :x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/prefix?value
+        :x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
+      throw:Sorry, we have that file from before
+
+    /*
+     * Doing the actual insertion of file.
+     */
+    p5.mysql.insert:@"insert into files (filename, prefix, username, name, description, type, sha) values(@filename, @prefix, @username, @name, @description, 'private', @sha)"
+      @filename:x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
+      @prefix:x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/prefix?value
       @username:x:/@whoami/*/username?value
       @name:"Default name, please change to something relevant ..."
       @description:
+      @sha:x:/@p5.crypto.hash.create-sha256-file?value
 
     /*
      * In case user is a guest, and this is an anonymous dropbox, we set a session

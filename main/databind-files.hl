@@ -111,6 +111,52 @@ p5.mysql.connect:[sulphur]
       format:"ddd d. MMM yyyy, HH:mm"
 
     /*
+     * Figuring out file size.
+     */
+    _folder
+    if:x:/@_dp/#/*/username?value
+      =:guest
+
+      /*
+       * Guests can only have private files.
+       */
+      set:x:/@_folder?value
+        src:/common/documents/private/
+
+    else
+
+      /*
+       * Need to figure out type of file.
+       */
+      switch:x:/@_dp/#/*/type?value
+        case:private
+          set:x:/@_folder?value
+            src:/users/{0}/documents/private/
+              :x:/@_dp/#/*/username?value
+        case:protected
+          set:x:/@_folder?value
+            src:/common/documents/private/
+        case:public
+          set:x:/@_folder?value
+            src:/common/documents/public/
+
+    /*
+     * Now we know which folder file is in, and we can retrieve its size.
+     */
+    _length
+    p5.io.file.get-length:{0}{1}{2}
+      :x:/@_folder?value
+      :x:/@_dp/#/*/prefix?value
+      :x:/@_dp/#/*/filename?value
+
+    /*
+     * Dividing size on 1024 to figure out KB size of file.
+     */
+    set:x:/@_length?value
+      /:x:/@p5.io.file.get-length/*?value.decimal
+        _:decimal:1024
+
+    /*
      * Forward evaluating [add] invocations arguments, and adding a widget into
      * [create-widgets] invocation below, for creating a widget wrapping file information.
      */
@@ -142,11 +188,12 @@ p5.mysql.connect:[sulphur]
                  */
                 label
                   class:sulphur-meta
-                  innerValue:'{0}' - {1} - {2} ({3})
+                  innerValue:"'{0}' - {1} - {2} ({3}) - {4:n0} KB"
                     :x:/@_dp/#/*/filename?value
                     :x:/@p5.types.date.format?value
                     :x:/@_dp/#/*/username?value
                     :x:/@_dp/#/*/type?value
+                    :x:/@_length?value
 
                 /*
                  * Download file hyperlink.

@@ -51,32 +51,55 @@ p5.mysql.connect:[sulphur]
     @id:x:/../*/id?value
 
   /*
-   * Checking if file is a private guest file, and current user is root,
-   * at which point we immediately transfer ownership of the file to the current
-   * root account.
+   * Whenever a root account edits a file, he takes control over the file,
+   * to allow a root account to delete shared files, among other things.
    */
   if:x:/@whoami/*/role?value
     =:root
     and:x:/@p5.mysql.select/*/*/username?value
-      =:guest
-    and:x:/@p5.mysql.select/*/*/type?value
-      =:private
+      !=:x:/@whoami/*/username?value
 
     /*
-     * Giving current root user ownership of file, and physically moving it on
-     * disc to reflect ownership change.
+     * Figuring out file's folder, and moving it accordingly.
+     *
+     * Defaulting to "guest/private".
      */
-    p5.mysql.update:@"update files set username = @username where id = @id"
-      @username:x:/@whoami/*/username?value
-      @id:x:/../*/id?value
-    set:x:/@p5.mysql.select/*/*/username?value
-      src:x:/@whoami/*/username?value
-    move-file:/common/documents/private/{0}{1}
+    _folder:/common/documents/private/
+    if:x:/@p5.mysql.select/*/*/username?value
+      !=:guest
+
+      /*
+       * Figuring out file type, which can only be "public" or "protected".
+       */
+      switch:x:/@p5.mysql.select/*/*/type?value
+        case:protected
+          set:x:/@_folder?value
+            src:/common/documents/private/
+        case:public
+          set:x:/@_folder?value
+            src:/users/{0}/documents/public/
+              :x:/@p5.mysql.select/*/*/username?value
+
+    /*
+     * Now we can actually physically move file.
+     */
+    move-file:{0}{1}{2}
+      :x:/@_folder?value
       :x:/@p5.mysql.select/*/*/prefix?value
       :x:/@p5.mysql.select/*/*/filename?value
       dest:~/documents/private/{0}{1}
         :x:/@p5.mysql.select/*/*/prefix?value
         :x:/@p5.mysql.select/*/*/filename?value
+
+    /*
+     * Giving current root user ownership of file, and physically moving it on
+     * disc to reflect ownership change.
+     */
+    p5.mysql.update:@"update files set username = @username, type='private' where id = @id"
+      @username:x:/@whoami/*/username?value
+      @id:x:/../*/id?value
+    set:x:/@p5.mysql.select/*/*/username?value
+      src:x:/@whoami/*/username?value
 
     /*
      * Giving the user some visual feedback about transfer of ownership.
