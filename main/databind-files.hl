@@ -4,6 +4,10 @@
  *
  * Requires no arguments, but you can optionally pass in [offset] and [filter] when invoking file,
  * to start out at a specific page, with a specified filter condition.
+ *
+ * Notice, optionally pass in [more] and set its value to the database ID of from
+ * where you wish to start fetching more items from, and rather "append" to grid,
+ * instead of clearing old items, and re-populating grid.
  */
 .defaults
   offset:int:0
@@ -34,7 +38,7 @@ if:x:/../*/filter?value
    * Filter was supplied, making sure we use it.
    */
   set:x:/@_filter?value
-    src:"and (username = @exact or name like @filter or description like @filter)"
+    src:"and (username = @exact or name like @filter or description like @filter or filename like @filter)"
   eval-x:x:/+/*/*
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
@@ -84,13 +88,58 @@ else
 
 
 /*
+ * Checking if caller requested [more] items, instead of re-binding grid.
+ */
+_more
+if:x:/../*/more?value
+  set:x:/@_more?value
+    src:"and id < @more"
+  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
+    src
+      @more:x:/../*/more?value
+
+
+
+
+
+/*
  * Connecting to database and selecting available files for user.
  */
 p5.mysql.connect:[sulphur]
-  p5.mysql.select:@"select * from files where {0} {1} order by id desc limit 10 offset @offset"
+  p5.mysql.select:@"select * from files where {0} {1} {2} order by id desc limit 10 offset @offset"
     :x:/@_where?value
     :x:/@_filter?value
+    :x:/@_more?value
     @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
+
+  /*
+   * Storing the ID of the last record we fetched in ViewState, in case there
+   * comes another request for "more" items later, at which point we extract
+   * the last ID, and select files from that point and onwards.
+   */
+  p5.web.viewstate.set:sulphur.last-file-id
+    src:x:/@p5.mysql.select/0/-/*/id?value
+
+  /*
+   * Making sure we only display "more" button, if there is a full set of files
+   * in current result.
+   */
+  if:x:/@p5.mysql.select/*?count.int
+    >=:int:10
+
+    /*
+     * Displaying "More" button.
+     */
+    set-widget-property:sulphur-feeder
+      visible:true
+
+  else
+
+    /*
+     * Hiding "More" button.
+     */
+    set-widget-property:sulphur-feeder
+      visible:false
 
   /*
    * Looping through each result from above, and creating one widget for each result.
@@ -188,12 +237,12 @@ p5.mysql.connect:[sulphur]
                  */
                 label
                   class:sulphur-meta
-                  innerValue:"'{0}' - {1} - {2} ({3}) - {4:n0} KB"
-                    :x:/@_dp/#/*/filename?value
-                    :x:/@p5.types.date.format?value
+                  innerValue:"{0:n0}KB<br/>{1} ({2})<br/>{3}<br/>{4}"
+                    :x:/@_length?value
                     :x:/@_dp/#/*/username?value
                     :x:/@_dp/#/*/type?value
-                    :x:/@_length?value
+                    :x:/@p5.types.date.format?value
+                    :x:/@_dp/#/*/filename?value
 
                 /*
                  * Download file hyperlink.
@@ -296,6 +345,19 @@ p5.mysql.connect:[sulphur]
 
   /*
    * Clearing widget's old content, and re-databinding files grid.
+   *
+   * Notice, we only clear old content if [keep-old] is not given, or has a false
+   * value.
    */
-  clear-widget:sulphur-files-grid
+  if:x:/../*/more?value
+    not
+
+    /*
+     * No [more] argument, clearing out old files from grid.
+     */
+    clear-widget:sulphur-files-grid
+
+  /*
+   * Creating widgets for each file.
+   */
   create-widgets

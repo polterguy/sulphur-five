@@ -247,6 +247,28 @@ create-widget
         container:sulphur-files-grid
           class:row
 
+        /*
+         * Datagrid wrapping actual files in system.
+         */
+        container:sulphur-feeder
+          class:row
+          widgets
+            div
+              class:col
+              style:"text-align:center;"
+              widgets
+                button
+                  innerValue:More ...
+                  onclick
+
+                    /*
+                     * Adding more files to datagrid.
+                     */
+                    p5.web.viewstate.get:sulphur.last-file-id
+                    eval-x:x:/+/*
+                    micro.evaluate.file:@SULPHUR/main/databind-files.hl
+                      more:x:/@p5.web.viewstate.get/*?value
+
 
 
 

@@ -52,7 +52,8 @@ if:x:/@select-data/*/*/uploaders?value
   p5.mysql.connect:[sulphur]
 
     /*
-     * Checking if there exists a file with the same SHA value from before, at which point we don't insert the file.
+     * Checking if there exists a file with the same SHA value from before, 
+     * at which point we don't insert the file.
      */
     p5.mysql.scalar:@"select count(*) from files where sha = @sha"
       @sha:x:/@p5.crypto.hash.create-sha256-file?value
