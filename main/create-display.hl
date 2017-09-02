@@ -29,28 +29,34 @@ if:x:/@whoami/*/role?value
    *
    * Regardless, we include the necessary JavaScript to handle uploading of files.
    */
+  p5.web.get-location-url
   p5.web.include-javascript:@"
-p5.sulphur_upload_files = function(e) {
+p5.sulphur_upload_files = function(e) {{
+
   var obsc = p5.$('sulphur-upload-obscurer').el;
   obsc.style.display = 'block';
   var files = e.target.files;
-  for(var i = 0; i < files.length; i++) {
-    var reader = new FileReader();
-    reader.onload = (function(file) {
-      return function(data) {
-        p5.$(e.target.id).raise('.onupload', {
-          onbefore:function(pars,evt) {
-            pars.push(['sulphur-file-name', file.name], ['sulphur-file-content', data.target.result.split('base64,')[1]]);
-          },
-          onsuccess:function(ret,evt) {
-            obsc.style.display = 'none';
-          }
-        });
-      }
-    })(files[i]);
-    reader.readAsDataURL(files[i]);
-  }
-}"
+  for(var i = 0; i < files.length; i++) {{
+    var xhr = new XMLHttpRequest();
+    var fd = new FormData();
+    xhr.open('POST', '{0}', true);
+    xhr.onreadystatechange = function() {{
+      if (xhr.readyState == 4 && xhr.status == 200) {{
+        obsc.style.display = 'none';
+        p5.$(e.target.id).raise('.onupload', {{
+          onbefore:function(pars,evt) {{
+            pars.push(['file-id', xhr.responseText]);
+          }}
+        }});
+      }}
+    }};
+    fd.append('file', files[i]);
+    xhr.send(fd);
+  }}
+}};
+"
+    :{0}/upload
+      :x:/@p5.web.get-location-url?value
 
 else
 
@@ -167,22 +173,9 @@ create-widget
               .onupload
 
                 /*
-                 * Retrieving the file name, and content, and base64 decoding 
-                 * file's content, before we invoke file responsible for saving
-                 * file, and inserting record into database.
+                 * Retrieving the file's ID.
                  */
-                p5.web.post.get:sulphur-file-name
-                p5.web.post.get:sulphur-file-content
-                p5.string.decode-base64:x:/@p5.web.post.get/*/sulphur-file-content?value
-
-                /*
-                 * Invoking file responsible for saving file and inserting a record for it
-                 * into our database.
-                 */
-                eval-x:x:/+/*
-                micro.evaluate.file:@SULPHUR/handle-files/save-file.hl
-                  filename:x:/../*/p5.web.post.get/*/sulphur-file-name?value
-                  content:x:/@p5.string.decode-base64?value
+                p5.web.post.get:file-id
 
                 /*
                  * Starting editing of file.
@@ -190,7 +183,7 @@ create-widget
                 p5.web.get-location-url
                 p5.web.set-location:{0}?edit={1}
                   :x:/@p5.web.get-location-url?value
-                  :x:/@micro.evaluate.file?value
+                  :x:/@p5.web.post.get/*?value
 
             div
               class:strip

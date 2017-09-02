@@ -1,0 +1,70 @@
+﻿
+/*
+ * Invoked when a file is uploaded to the server.
+ *
+ * Expects the HTTP request to be of type "multipart/form-data" and that the file
+ * can be found as HTTP POST parameter "file".
+ *
+ * Will return the database ID of the uploaded file if successful, otherwise it
+ * will throw an exception.
+ */
+
+
+
+
+
+/*
+ * Verifying user is allowed to upload files.
+ */
+whoami
+select-data:x:/*/*/sulphur.settings
+if:x:/@select-data/*/*/uploaders?value
+  =:all
+  or:x:/@select-data/*/*/uploaders?value
+    =:users
+    and:x:/@whoami/*/default?value
+      !=:bool:true
+  or:x:/@select-data/*/*/uploaders?value
+    =:root
+    and:x:/@whoami/*/role?value
+      =:root
+
+  /*
+   * Somehow, user is allowed to upload files to server.
+   *
+   * Retrieving file's content, and saving it to correct folder.
+   */
+  p5.web.request.get-body
+  p5.mime.parse:x:/@p5.web.request.get-body?value
+    attachment-folder:~/documents/private/
+
+  /*
+   * Inserting entry into database.
+   */
+  p5.mysql.connect:[sulphur]
+    p5.mysql.insert:@"insert into files (filename, prefix, username, name, description, type) values(@filename, @prefix, @username, @name, @description, 'private')"
+      @filename:x:/@p5.mime.parse/*/*/filename?value
+      @prefix:x:/@p5.mime.parse/*/*/filename/*/prefix?value
+      @username:x:/@whoami/*/username?value
+      @name:"Default name, please change to something relevant ..."
+      @description:
+
+    /*
+     * In case user is a guest, and this is an anonymous dropbox, we set a session
+     * variable, allowing user to edit the file initially (once)!
+     */
+    p5.web.session.set:sulphur.allow-edit
+      src:bool:true
+
+    /*
+     * Return database ID of newly uploaded file.
+     */
+    return:x:/@p5.mysql.insert/*/id?value
+
+else
+
+  /*
+   * User is not allowed to upload file, throwing an exception with some basic
+   * information about why.
+   */
+  throw:Access denied!

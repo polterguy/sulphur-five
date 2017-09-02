@@ -10,6 +10,32 @@
 
 
 /*
+ * Checking if this is an upload request, and if so, delegating work to uploader.
+ */
+p5.io.unroll-path:@SULPHUR/
+split:x:/-?value
+  =:/
+if:x:/../*/url?value
+  =:/{0}/upload
+    :x:/@split/0/-?name
+
+  /*
+   * This is an upload request, delegating work to file responsible for handling it,
+   * making sure we return the ID of file to client, if it was successfully uploaded.
+   */
+  try
+    micro.evaluate.file:@SULPHUR/handle-files/upload-file.hl
+    p5.web.echo:x:/-?value
+  catch
+    p5.web.echo:ERROR:{0}
+      :x:/..catch/*/message?value
+  return
+
+
+
+
+
+/*
  * Creating main content container.
  *
  * This is the place where "everything" is stored in Sulphur, and is used to display

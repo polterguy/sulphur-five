@@ -100,7 +100,7 @@ switch:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/type?value
 /*
  * Echoing file to caller.
  */
-p5.web.echo-file:{0}{1}-{2}
+p5.web.echo-file:{0}{1}{2}
   :x:/@_folder?value
   :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
   :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value

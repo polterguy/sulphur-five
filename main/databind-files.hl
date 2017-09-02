@@ -108,7 +108,7 @@ p5.mysql.connect:[sulphur]
      * Nicely formatting date.
      */
     p5.types.date.format:x:/@_dp/#/*/uploaded?value
-      format:"dddd d. MMM yyyy - HH:mm"
+      format:"ddd d. MMM yyyy, HH:mm"
 
     /*
      * Forward evaluating [add] invocations arguments, and adding a widget into
@@ -142,7 +142,8 @@ p5.mysql.connect:[sulphur]
                  */
                 label
                   class:sulphur-meta
-                  innerValue:{0} - {1} ({2})
+                  innerValue:'{0}' - {1} - {2} ({3})
+                    :x:/@_dp/#/*/filename?value
                     :x:/@p5.types.date.format?value
                     :x:/@_dp/#/*/username?value
                     :x:/@_dp/#/*/type?value

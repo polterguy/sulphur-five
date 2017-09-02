@@ -71,10 +71,10 @@ p5.mysql.connect:[sulphur]
       @id:x:/../*/id?value
     set:x:/@p5.mysql.select/*/*/username?value
       src:x:/@whoami/*/username?value
-    move-file:/common/documents/private/{0}-{1}
+    move-file:/common/documents/private/{0}{1}
       :x:/@p5.mysql.select/*/*/prefix?value
       :x:/@p5.mysql.select/*/*/filename?value
-      dest:~/documents/private/{0}-{1}
+      dest:~/documents/private/{0}{1}
         :x:/@p5.mysql.select/*/*/prefix?value
         :x:/@p5.mysql.select/*/*/filename?value
 
@@ -252,33 +252,33 @@ p5.mysql.connect:[sulphur]
                 switch:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/type?value
                   case:private
                     set:x:/@_src?value
-                      src:~/documents/private/{0}-{1}
+                      src:~/documents/private/{0}{1}
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
                   case:protected
                     set:x:/@_src?value
-                      src:/common/documents/private/{0}-{1}
+                      src:/common/documents/private/{0}{1}
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
                   case:public
                     set:x:/@_src?value
-                      src:/common/documents/public/{0}-{1}
+                      src:/common/documents/public/{0}{1}
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
                 switch:x:/../*/protection?value
                   case:private
                     set:x:/@_dest?value
-                      src:~/documents/private/{0}-{1}
+                      src:~/documents/private/{0}{1}
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
                   case:protected
                     set:x:/@_dest?value
-                      src:/common/documents/private/{0}-{1}
+                      src:/common/documents/private/{0}{1}
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
                   case:public
                     set:x:/@_dest?value
-                      src:/common/documents/public/{0}-{1}
+                      src:/common/documents/public/{0}{1}
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
                         :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
 
@@ -416,7 +416,7 @@ p5.mysql.connect:[sulphur]
                     set:x:/@_folder?value
                       src:/common/documents/public/
 
-                  delete-file:{0}{1}-{2}
+                  delete-file:{0}{1}{2}
                     :x:/@_folder?value
                     :x:/@p5.mysql.select/*/*/prefix?value
                     :x:/@p5.mysql.select/*/*/filename?value
