@@ -257,8 +257,26 @@ create-widget
               class:col
               style:"text-align:center;"
               widgets
-                button
-                  innerValue:More ...
+                button:sulphur-feed-more-button
+                  style:"padding-left:75px;padding-right:75px;"
+                  class:air-top
+                  innerValue:@"<span class=""icon-plus""></span>"
+                  oninit
+
+                    /*
+                     * Including JavaScript to determine is user is at the bottom of page,
+                     * at which point we "auto-feed" grid with more items.
+                     */
+                    p5.web.include-javascript:@"
+window.onscroll = function() {
+  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+    var el = p5.$('sulphur-feed-more-button');
+    if (el.el) {
+      el.raise('onclick');
+    }
+  }
+};"
+
                   onclick
 
                     /*

@@ -133,6 +133,14 @@ p5.mysql.connect:[sulphur]
     set-widget-property:sulphur-feeder
       visible:true
 
+    /*
+     * Deleting "hr" widget at the bottom, if it exists.
+     */
+    if
+      fetch:x:/0/0?value
+        widget-exists:sulphur-at-end-of-dataset
+      delete-widget:sulphur-at-end-of-dataset
+
   else
 
     /*
@@ -140,6 +148,18 @@ p5.mysql.connect:[sulphur]
      */
     set-widget-property:sulphur-feeder
       visible:false
+
+    /*
+     * Creating horizontal ruler at the bottom, to give user a visual clue about
+     * that he is at the end of dataset, but only if it doesn't exist from before.
+     */
+    if
+      fetch:x:/0/0?value
+        widget-exists:sulphur-at-end-of-dataset
+      not
+      create-widget:sulphur-at-end-of-dataset
+        parent:sulphur-main-container
+        element:hr
 
   /*
    * Looping through each result from above, and creating one widget for each result.
