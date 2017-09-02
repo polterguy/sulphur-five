@@ -10,7 +10,11 @@
 
 
 /*
- * TODO: Implement more access control!
+ * First we check if this is an initial upload by an anonymous guest, and if so,
+ * we allow him to edit the file, but only once.
+ *
+ * This is necessary to allow a guest account to edit file initially, if the server
+ * is setup to be an "anonymous dropbox file server".
  */
 whoami
 p5.web.session.get:sulphur.allow-edit
@@ -19,7 +23,7 @@ if:x:/@whoami/*/default?value
     not
 
   /*
-   * User is guest, and file was not just now uploaded by current session.
+   * User is guest, and file was not recently uploaded by current session.
    */
   micro.windows.info:Access denied!
     class:micro-windows-info warning
@@ -31,7 +35,7 @@ if:x:/@whoami/*/default?value
 
 /*
  * Making sure we delete session variable, which allows guests to initially
- * edit uploaded files (in case this is setup as an anonymous dropbox).
+ * edit uploaded files, in case this is setup as an anonymous dropbox.
  */
 p5.web.session.set:sulphur.allow-edit
 
@@ -48,7 +52,7 @@ p5.mysql.connect:[sulphur]
 
   /*
    * Checking if file is a private guest file, and current user is root,
-   * at which point we immediately give ownership of the file to the current
+   * at which point we immediately transfer ownership of the file to the current
    * root account.
    */
   if:x:/@whoami/*/role?value
@@ -79,6 +83,25 @@ p5.mysql.connect:[sulphur]
      */
     micro.windows.info:File's ownership was transferred to you
       class:micro-windows-info success
+
+  /*
+   * Checking if user is allowed to edit file.
+   */
+  if:x:/@whoami/*/role?value
+    !=:root
+    and:x:/@whoami/*/username?value
+      !=:x:/@p5.mysql.select/*/*/username?value
+
+    /*
+     * User is not root, and he tried to edit a file which he did not own.
+     */
+    micro.windows.info:Sorry, you're not allowed to edit this file
+      class:micro-windows-info warning
+
+    /*
+     * Returning early to avoid user being allowed to edit file.
+     */
+    return
 
   /*
    * Formatting values to display to user.
