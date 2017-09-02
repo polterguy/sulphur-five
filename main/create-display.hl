@@ -21,9 +21,12 @@ if:x:/@whoami/*/role?value
     not
     and:x:/@select-data/*/*/uploaders?value
       =:users
+  or:x:/@select-data/*/*/uploaders?value
+    =:all
 
   /*
-   * User is either root, or everybody is allowed to upload file.
+   * User is either root, or all registered users are allowed to upload file.
+   *
    * Regardless, we include the necessary JavaScript to handle uploading of files.
    */
   p5.web.include-javascript:@"
@@ -133,7 +136,7 @@ create-widget
                 get-widget-property:sulphur-search
                   value
                 eval-x:x:/+/*
-                micro.evaluate.file:@SULPHUR/files/databind-files.hl
+                micro.evaluate.file:@SULPHUR/main/databind-files.hl
                   filter:x:/@get-widget-property/*/*?value
 
                 /*
@@ -247,7 +250,7 @@ create-widget
 /*
  * Initial databinding of files.
  */
-micro.evaluate.file:@SULPHUR/files/databind-files.hl
+micro.evaluate.file:@SULPHUR/main/databind-files.hl
 
 
 
@@ -264,5 +267,5 @@ if:x:/@p5.web.query.get/*?value
    * Evaluating file responsible for editing file.
    */
   eval-x:x:/+/*
-  micro.evaluate.file:@SULPHUR/files/edit-file.hl
+  micro.evaluate.file:@SULPHUR/handle-files/edit-file.hl
     id:x:/@p5.web.query.get/*?value

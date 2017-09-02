@@ -42,6 +42,17 @@ p5.mysql.connect:[sulphur]
 
 
 /*
+ * In case this was a guest user, we set session variable, which allows him
+ * to initially edit the file, providing contextual information about it.
+ */
+p5.web.session.set:sulphur.allow-edit
+  src:bool:true
+
+
+
+
+
+/*
  * Returning ID to caller.
  */
 return:x:/@p5.mysql.connect/*/p5.mysql.insert/*/id?value

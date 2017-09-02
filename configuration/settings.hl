@@ -20,10 +20,19 @@ select-data:x:/*/*/sulphur.settings
  * Figuring out who can upload files.
  */
 if:x:/@select-data/*/*/uploaders?value
+  =:all
+
+  /*
+   * Everybody, including guests can upload files.
+   */
+  add:x:/../*/create-widgets/**/=uploaders/./**/=all
+    src:checked
+
+else-if:x:/@select-data/*/*/uploaders?value
   =:users
 
   /*
-   * Any user can upload files.
+   * Only registered users can upload files.
    */
   add:x:/../*/create-widgets/**/=uploaders/./**/=users
     src:checked
@@ -77,7 +86,8 @@ create-widgets
         radio-group
           .data-field:uploaders
           options
-            Any registered user can upload:users
+            Guests can upload files:all
+            Any user can upload:users
             Only root can upload:root
         p
           innerValue:@"Who can view files on your server? Notice, if you set this to anybody, then also unregistered users 

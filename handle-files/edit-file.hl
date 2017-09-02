@@ -10,11 +10,75 @@
 
 
 /*
+ * TODO: Implement more access control!
+ */
+whoami
+p5.web.session.get:sulphur.allow-edit
+if:x:/@whoami/*/default?value
+  and:x:/@p5.web.session.get/*?value
+    not
+
+  /*
+   * User is guest, and file was not just now uploaded by current session.
+   */
+  micro.windows.info:Access denied!
+    class:micro-windows-info warning
+  return
+
+
+
+
+
+/*
+ * Making sure we delete session variable, which allows guests to initially
+ * edit uploaded files (in case this is setup as an anonymous dropbox).
+ */
+p5.web.session.set:sulphur.allow-edit
+
+
+
+
+
+/*
  * Opening database connection, and selecting file.
  */
 p5.mysql.connect:[sulphur]
   p5.mysql.select:@"select * from files where id = @id"
     @id:x:/../*/id?value
+
+  /*
+   * Checking if file is a private guest file, and current user is root,
+   * at which point we immediately give ownership of the file to the current
+   * root account.
+   */
+  if:x:/@whoami/*/role?value
+    =:root
+    and:x:/@p5.mysql.select/*/*/username?value
+      =:guest
+    and:x:/@p5.mysql.select/*/*/type?value
+      =:private
+
+    /*
+     * Giving current root user ownership of file, and physically moving it on
+     * disc to reflect ownership change.
+     */
+    p5.mysql.update:@"update files set username = @username where id = @id"
+      @username:x:/@whoami/*/username?value
+      @id:x:/../*/id?value
+    set:x:/@p5.mysql.select/*/*/username?value
+      src:x:/@whoami/*/username?value
+    move-file:/common/documents/private/{0}-{1}
+      :x:/@p5.mysql.select/*/*/prefix?value
+      :x:/@p5.mysql.select/*/*/filename?value
+      dest:~/documents/private/{0}-{1}
+        :x:/@p5.mysql.select/*/*/prefix?value
+        :x:/@p5.mysql.select/*/*/filename?value
+
+    /*
+     * Giving the user some visual feedback about transfer of ownership.
+     */
+    micro.windows.info:File's ownership was transferred to you
+      class:micro-windows-info success
 
   /*
    * Formatting values to display to user.
@@ -71,6 +135,7 @@ p5.mysql.connect:[sulphur]
             innerValue:x:/@p5.mysql.select/*/*/description?value
             rows:7
             title:Description for file, feel free to use Markdown here
+            style:"margin-bottom:3rem;"
             onchange
 
               /*
@@ -84,19 +149,32 @@ p5.mysql.connect:[sulphur]
                   @description:x:/@get-widget-property/*/*?value
                   @id:x:/@_id?value
 
+
           /*
            * Protection for file wrapper widget.
            */
-          p
-            innerValue:@"Public means accessible to anyone, protected means only accessible for registered users, and private means only accessible for the file's owner."
           div
-            style:"margin-bottom:1rem;"
+            style:"margin-bottom:1rem;margin-top:-2rem;"
             oninit
 
               /*
                * Checking file's protection, and setting radio buttons
                * initial values accordingly.
+               *
+               * Notice, in case guest uploads are enabled, and user is a guest,
+               * we entirely delete this widget.
+               *
+               * This allows for an "anonymous WikiLeaks type of DropBox".
                */
+              whoami
+              if:x:/-/*/default?value
+
+                /*
+                 * User is guest, deleting widget and returning early.
+                 */
+                delete-widget:x:/../*/_event?value
+                return
+
               _id:x:/@p5.mysql.select/*/*/id?value
               p5.mysql.connect:[sulphur]
                 p5.mysql.scalar:@"select type from files where id = @id"
@@ -190,6 +268,8 @@ p5.mysql.connect:[sulphur]
                   dest:x:/@_dest?value
 
             widgets
+              p
+                innerValue:@"Public means accessible to anyone, protected means only accessible for registered users, and private means only accessible for the file's owner."
               label
                 for:sulphur-rdo-private
                 innerValue:Private

@@ -1,6 +1,7 @@
 
+
 /*
- * Desktop widget file for Silphur Five.
+ * Desktop widget creator file for Sulphur Five.
  */
 container
   element:a
@@ -51,6 +52,8 @@ container
 
           /*
            * User is not logged in, returning early.
+           *
+           * Notice, if this occurs, widget is already deleted anyways.
            */
           return
 
@@ -63,28 +66,19 @@ container
         if:x:/@whoami/*/default?value
 
           /*
-           * User is not logged in, only showing publicly available files.
+           * User is not logged in, only showing count of publicly available files.
            */
           set:x:/@_sql?value
             src:@"select count(*) from files where type = 'public'"
 
-        else-if:x:/@whoami/*/role?value
-          =:root
-
-          /*
-           * User is root, displaying all files in system.
-           */
-          set:x:/@_sql?value
-            src:@"select count(*) from files"
-
         else
 
           /*
-           * User is logged in, but not root, displaying all protected files, public
-           * files, and files belonging to user.
+           * User is logged in, displaying count of all protected files, 
+           * public files, and files belonging to user.
            */
           set:x:/@_sql?value
-            src:@"select count(*) from files where type = 'public' or type = 'protected' or username = @username"
+            src:@"select count(*) from files where type = 'public' or type = 'protected' or username = @username or username = 'guest'"
           add:x:/../**/p5.mysql.scalar
             src
               @username:x:/@whoami/*/username?value
@@ -93,7 +87,7 @@ container
           p5.mysql.scalar:x:/@_sql?value
 
           /*
-           * Setting widget's innerValue, making sure we drop 'count' altogether, if it's zero.
+           * Setting widget's innerValue, adding count of files user has access to.
            */
           set-widget-property:x:/../*/_event?value
             innerValue:@"<span class=""icon-film desktop-app-icon""></span><span style=""position:absolute;top:5px;right:5px;font-size:.8rem;"">{0}</span>"

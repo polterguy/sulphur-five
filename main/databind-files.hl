@@ -17,7 +17,7 @@
  */
 micro.lambda.contract.optional:x:/..
   offset:long
-  filter
+  filter:string
 
 
 
@@ -34,7 +34,7 @@ if:x:/../*/filter?value
    * Filter was supplied, making sure we use it.
    */
   set:x:/@_filter?value
-    src:"and (filename like @filter or username = @exact or name like @filter or description like @filter)"
+    src:"and (username = @exact or name like @filter or description like @filter)"
   eval-x:x:/+/*/*
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
@@ -49,19 +49,35 @@ if:x:/../*/filter?value
 
 /*
  * Making sure we allow only for viewing files that the user actually has access to.
+ *
+ * Notice, a user has access to all of his own files, in addition to all public
+ * and protected files.
+ *
+ * The exception is a "guest", which only has access to public files.
  */
 whoami
-_protected
+_where
 if:x:/@whoami/*/default?value
-  not
+
+  /*
+   * User is guest, making sure he only has access to public files.
+   */
+  set:x:/@_where?value
+    src:"type = 'public'"
+
+else
 
   /*
    * User is not guest, but an actual logged in user.
    *
-   * Hence giving him access to also "protected" files.
+   * Hence giving him access to also "protected" files, in addition to all of user's
+   * own files, and all of guest's files, including guest's private files.
    */
-  set:x:/@_protected?value
-    src:"or type = 'protected'"
+  set:x:/@_where?value
+    src:"(username = @username or username = 'guest' or type = 'protected' or type = 'public')"
+  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
+    src
+      @username:x:/@whoami/*/username?value
 
 
 
@@ -71,11 +87,10 @@ if:x:/@whoami/*/default?value
  * Connecting to database and selecting available files for user.
  */
 p5.mysql.connect:[sulphur]
-  p5.mysql.select:@"select * from files where (username = @username or type = 'public' {0}) {1} order by id desc limit 10 offset @offset"
-    :x:/@_protected?value
+  p5.mysql.select:@"select * from files where {0} {1} order by id desc limit 10 offset @offset"
+    :x:/@_where?value
     :x:/@_filter?value
     @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
-    @username:x:/@whoami/*/username?value
 
   /*
    * Looping through each result from above, and creating one widget for each result.
@@ -84,6 +99,8 @@ p5.mysql.connect:[sulphur]
 
     /*
      * Making sure we transform the description of file from Markdown to HTML.
+     *
+     * TODO: Validate HTML for Markdown HTML malicious tag injection!
      */
     markdown2html:x:/@_dp/#/*/description?value
 
@@ -125,10 +142,10 @@ p5.mysql.connect:[sulphur]
                  */
                 label
                   class:sulphur-meta
-                  innerValue:{0} ({1}) - {2}
+                  innerValue:{0} - {1} ({2})
+                    :x:/@p5.types.date.format?value
                     :x:/@_dp/#/*/username?value
                     :x:/@_dp/#/*/type?value
-                    :x:/@p5.types.date.format?value
 
                 /*
                  * Download file hyperlink.
@@ -159,6 +176,20 @@ p5.mysql.connect:[sulphur]
                   innerValue:@"<span class=""icon-pencil""></span>"
                   title:Edit file ...
                   oninit
+
+                    /*
+                     * Checking if user is guest, and if so, deleting entire widget
+                     * to avoid having guests editing files after having (optionally)
+                     * initially uploaded them.
+                     */
+                    whoami
+                    if:x:/-/*/default?value
+
+                      /*
+                       * User is guest.
+                       */
+                      delete-widget:x:/../*/_event?value
+                      return
 
                     /*
                      * Forward evaluated above.
