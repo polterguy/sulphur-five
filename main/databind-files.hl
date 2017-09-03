@@ -121,45 +121,41 @@ p5.mysql.connect:[sulphur]
     src:x:/@p5.mysql.select/0/-/*/id?value
 
   /*
-   * Making sure we only display "more" button, if there is a full set of files
-   * in current result.
+   * Making sure we display "end of dataset ruler" if we are at end of dataset,
+   * and it doesn't exist from before.
    */
   if:x:/@p5.mysql.select/*?count.int
-    >=:int:10
-
-    /*
-     * Displaying "More" button.
-     */
-    set-widget-property:sulphur-feeder
-      visible:true
-
-    /*
-     * Deleting "hr" widget at the bottom, if it exists.
-     */
-    if
-      fetch:x:/0/0?value
-        widget-exists:sulphur-at-end-of-dataset
-      delete-widget:sulphur-at-end-of-dataset
-
-  else
-
-    /*
-     * Hiding "More" button.
-     */
-    set-widget-property:sulphur-feeder
-      visible:false
-
-    /*
-     * Creating horizontal ruler at the bottom, to give user a visual clue about
-     * that he is at the end of dataset, but only if it doesn't exist from before.
-     */
-    if
+    <:int:10
+    and
       fetch:x:/0/0?value
         widget-exists:sulphur-at-end-of-dataset
       not
-      create-widget:sulphur-at-end-of-dataset
-        parent:sulphur-main-container
-        element:hr
+
+    /*
+     * "End of dataset ruler" does not exist, and we are at the end of our dataset,
+     * hence creating a visual clue, signaling that we're at the end of dataset,
+     * in addition to signaling to JavaScript logic, that it shouldn't try to 
+     * fetch more items.
+     */
+    create-widget:sulphur-at-end-of-dataset
+      parent:sulphur-main-container
+      element:hr
+    p5.web.send-javascript:"p5.sulphur_end_of_dataset = true;"
+
+  else-if:x:/@p5.mysql.select/*?count.int
+    >=:int:10
+    and
+      fetch:x:/0/0?value
+        widget-exists:sulphur-at-end-of-dataset
+
+    /*
+     * "End of dataset ruler" exists, and there are possibly more items,
+     * hence we delete our visual clue, and signal to our JavaScript "feeder"
+     * logic that it should attempt to retrieve more items when user is at bottom
+     * of page.
+     */
+    delete-widget:sulphur-at-end-of-dataset
+    p5.web.send-javascript:"p5.sulphur_end_of_dataset = false;"
 
   /*
    * Looping through each result from above, and creating one widget for each result.

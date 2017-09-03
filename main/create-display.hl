@@ -246,46 +246,30 @@ create-widget
          */
         container:sulphur-files-grid
           class:row
+          oninit
 
-        /*
-         * Datagrid wrapping actual files in system.
-         */
-        container:sulphur-feeder
-          class:row
-          widgets
-            div
-              class:col
-              style:"text-align:center;"
-              widgets
-                button:sulphur-feed-more-button
-                  style:"padding-left:75px;padding-right:75px;"
-                  class:air-top
-                  innerValue:@"<span class=""icon-plus""></span>"
-                  oninit
-
-                    /*
-                     * Including JavaScript to determine is user is at the bottom of page,
-                     * at which point we "auto-feed" grid with more items.
-                     */
-                    p5.web.include-javascript:@"
+            /*
+             * Including JavaScript to determine is user is at the bottom of page,
+             * at which point we "auto-feed" grid with more items.
+             */
+            p5.web.include-javascript:@"
 window.onscroll = function() {
   if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-    var el = p5.$('sulphur-feed-more-button');
-    if (el.el) {
-      el.raise('onclick');
+    if (!p5.sulphur_end_of_dataset) {
+      var el = p5.$('sulphur-files-grid');
+      el.raise('.onfeed');
     }
   }
 };"
+          .onfeed
 
-                  onclick
-
-                    /*
-                     * Adding more files to datagrid.
-                     */
-                    p5.web.viewstate.get:sulphur.last-file-id
-                    eval-x:x:/+/*
-                    micro.evaluate.file:@SULPHUR/main/databind-files.hl
-                      more:x:/@p5.web.viewstate.get/*?value
+            /*
+             * Adding more files to datagrid.
+             */
+            p5.web.viewstate.get:sulphur.last-file-id
+            eval-x:x:/+/*
+            micro.evaluate.file:@SULPHUR/main/databind-files.hl
+              more:x:/@p5.web.viewstate.get/*?value
 
 
 
