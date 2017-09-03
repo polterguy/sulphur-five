@@ -5,6 +5,12 @@
  * Expects the HTTP request to be of type "multipart/form-data" and that the file
  * can be found as HTTP POST parameter "file".
  *
+ * Optionally, it also expects an HTTP POST parameter called "batch-id".
+ * If no "batch-id" POST parameter is given, a randomly generated GUID will
+ * be automatically created, and associated with the upload, as its "batch-id".
+ *
+ * The "batch-id" allows for uploading multiple files, that are somehow related.
+ *
  * Will return the database ID of the uploaded file if successful, otherwise it
  * will throw an exception.
  */
@@ -36,6 +42,27 @@ if:x:/@select-data/*/*/uploaders?value
    */
   p5.web.request.parse-mime
     attachment-folder:~/documents/private/
+
+  /*
+   * Retrieving "batch-id", and automatically creating a random GUID,
+   * if no "batch-id" was specified.
+   */
+  _batch-id
+  if:x:@"/@p5.web.request.parse-mime/*/*/text/=plain/*/Content-Disposition/@""=~name=""""batch-id"""""""
+
+    /*
+     * We found a "batch-id" in HTTP POST request.
+     */
+    set:x:/@_batch-id?value
+      src:x:@"/@p5.web.request.parse-mime/*/*/text/=plain/*/Content-Disposition/@""=~name=""""batch-id""""""/./*/content?value"
+
+  else
+
+    /*
+     * There was no "batch-id" HTTP POST argument in request.
+     */
+    set:x:/@_batch-id?value
+      p5.types.guid.new
 
   /*
    * Figuring out SHA value of file, to avoid inserting same file multiple times.
@@ -72,13 +99,14 @@ if:x:/@select-data/*/*/uploaders?value
     /*
      * Doing the actual insertion of file.
      */
-    p5.mysql.insert:@"insert into files (filename, prefix, username, name, description, type, sha) values(@filename, @prefix, @username, @name, @description, 'private', @sha)"
+    p5.mysql.insert:@"insert into files (filename, prefix, username, name, description, type, sha, batchid) values(@filename, @prefix, @username, @name, @description, 'private', @sha, @batchid)"
       @filename:x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
       @prefix:x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/prefix?value
       @username:x:/@whoami/*/username?value
       @name:x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
       @description:
       @sha:x:/@p5.crypto.hash.create-sha1-file?value
+      @batchid:x:/@_batch-id?value
 
     /*
      * Return database ID of newly uploaded file.

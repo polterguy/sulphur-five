@@ -103,11 +103,12 @@ if:x:/../*/more?value
 
 
 /*
- * Checking if there is an HTTP GET paremeter further filtering out users.
+ * Checking if there is an HTTP GET paremeter further filtering out files 
+ * according to users.
  */
 _who
 p5.web.query.get:user
-if:x:/@p5.web.query.get/*?value
+if:x:/../*/p5.web.query.get/*/user?value
 
   /*
    * Client wants to filter away all files not belonging to a specific user.
@@ -116,7 +117,49 @@ if:x:/@p5.web.query.get/*?value
     src:"and username = @username2"
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
-      @username2:x:/@p5.web.query.get/*?value
+      @username2:x:/../*/p5.web.query.get/*/user?value
+
+
+
+
+
+/*
+ * Checking if there is an HTTP GET paremeter further filtering out files 
+ * according to a specific "batch-id".
+ */
+_batch
+p5.web.query.get:batch-id
+if:x:/@p5.web.query.get/*?value
+
+  /*
+   * Client wants to filter away all files not belonging to a specific user.
+   */
+  set:x:/@_batch?value
+    src:"and batchid = @batch"
+  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
+    src
+      @batch:x:/../*/p5.web.query.get/*/batch-id?value
+
+
+
+
+
+/*
+ * Checking if there is an HTTP GET paremeter wanting to only display file
+ * matching specified sha value.
+ */
+_sha
+p5.web.query.get:sha
+if:x:/@p5.web.query.get/*?value
+
+  /*
+   * Client wants to view only file matching specified sha value.
+   */
+  set:x:/@_sha?value
+    src:"and sha = @sha"
+  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
+    src
+      @sha:x:/../*/p5.web.query.get/*/sha?value
 
 
 
@@ -126,11 +169,13 @@ if:x:/@p5.web.query.get/*?value
  * Connecting to database and selecting available files for user.
  */
 p5.mysql.connect:[sulphur]
-  p5.mysql.select:@"select * from files where {0} {1} {2} {3} order by id desc limit 10 offset @offset"
+  p5.mysql.select:@"select * from files where {0} {1} {2} {3} {4} {5} order by id desc limit 10 offset @offset"
     :x:/@_where?value
     :x:/@_filter?value
     :x:/@_more?value
     :x:/@_who?value
+    :x:/@_batch?value
+    :x:/@_sha?value
     @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
 
   /*
@@ -249,10 +294,19 @@ p5.mysql.connect:[sulphur]
         _:decimal:1024
 
     /*
+     * Notice, we don't display the date, unless user is actually logged in, but
+     * mask it, to avoid giving away meta information about where the file might have
+     * originally surfaced initially.
+     */
+    if:x:/@whoami/*/default?value
+      set:x:/@p5.types.date.format?value
+        src:"XXX"
+
+    /*
      * Forward evaluating [add] invocations arguments, and adding a widget into
      * [create-widgets] invocation below, for creating a widget wrapping file information.
      */
-    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href)|/+/**/_id
+    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href|/widgets/*/h3/*/innerValue)|/+/**/_id
     add:x:/..p5.mysql.connect/*/create-widgets
       src
 
@@ -357,9 +411,14 @@ p5.mysql.connect:[sulphur]
                  *
                  * Not filename, but friendly "header" for file that is.
                  */
-                h3
-                  class:sulphur-file-name
-                  innerValue:x:/@_dp/#/*/name?value
+                a
+                  href:{0}?sha={1}
+                    :x:/@p5.web.get-location-url?value
+                    :x:/@_dp/#/*/sha?value
+                  widgets
+                    h3
+                      class:sulphur-file-name
+                      innerValue:x:/@_dp/#/*/name?value
 
                 /*
                  * Meta information username, protection, etc.
@@ -370,7 +429,6 @@ p5.mysql.connect:[sulphur]
                     span
                       innerValue:"Owner; "
                     a
-                      role:button
                       class:sulphur-meta-owner
                       innerValue:"{0} ({1})"
                         :x:/@_dp/#/*/username?value
@@ -379,11 +437,26 @@ p5.mysql.connect:[sulphur]
                         :x:/@p5.web.get-location-url?value
                         :x:/@_dp/#/*/username?value
                     span
-                      innerValue:"<br/>Filename; '{2}' - Uploaded; {1}<br/>Sha1; {3} - Size; {0:n0}KB"
+                      innerValue:" - "
+                    a
+                      class:sulphur-meta-batch
+                      innerValue:batch
+                      href:"{0}?batch-id={1}"
+                        :x:/@p5.web.get-location-url?value
+                        :x:/@_dp/#/*/batchid?value
+                    br
+                    a
+                      class:sulphur-meta-sha
+                      innerValue:Sha1 {0}
+                        :x:/@_dp/#/*/sha?value
+                      href:"{0}?sha={1}"
+                        :x:/@p5.web.get-location-url?value
+                        :x:/@_dp/#/*/sha?value
+                    span
+                      innerValue:"<br/>Filename; '{2}' - Uploaded; {1} - {0:n0}KB"
                         :x:/@_length?value
                         :x:/@p5.types.date.format?value
                         :x:/@_dp/#/*/filename?value
-                        :x:/@_dp/#/*/sha?value
 
                 /*
                  * Download file hyperlink.
@@ -487,6 +560,60 @@ p5.mysql.connect:[sulphur]
      * No [more] argument, clearing out old files from grid.
      */
     clear-widget:sulphur-files-grid
+
+    /*
+     * Checking if we should display who these files belongs to 
+     * (if dataset is filtered for a specific user that is).
+     *
+     * Or if we're viewing a "batch" of files.
+     */
+    if:x:/../*/p5.web.query.get/*/user?value
+
+      /*
+       * Making sure we display which user these files comes from.
+       */
+      create-widget
+        parent:sulphur-files-grid
+        style:"margin-left:auto;margin-right:auto;margin-bottom:3rem;"
+        element:h1
+        innerValue:{0}'s files
+          :x:/../*/p5.web.query.get/*/user?value
+
+    else-if:x:/../*/p5.web.query.get/*/batch-id?value
+
+      /*
+       * Making sure we display the fact that these files belongs to the same batch,
+       * and when it was uploaded, and by whom.
+       */
+      create-widget
+        parent:sulphur-files-grid
+        style:"margin-left:auto;margin-right:auto;margin-bottom:3rem;"
+        element:h1
+        innerValue:Batch uploaded by {0}
+          :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/username?value
+
+    else-if:x:/../*/p5.web.query.get/*/sha?value
+
+      /*
+       * Making sure we display the the SHA value for file, as an H1 header,
+       * to create some search engine optimization (SEO) to allow for searching
+       * for a file, at another location - In case server where file originally
+       * was published is taken down for some reasons.
+       */
+      create-widget
+        parent:sulphur-files-grid
+        style:"margin-left:auto;margin-right:auto;margin-bottom:3rem;"
+        element:h3
+        innerValue:{0}
+          :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/sha?value
+
+      /*
+       * To create some further SEO feature, we in addition set the page's title
+       * to the file's SHA value.
+       */
+      p5.web.page.set-title:{0} - {1}
+        :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/name?value
+        :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/sha?value
 
   /*
    * Creating widgets for each file.

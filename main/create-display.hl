@@ -25,10 +25,14 @@ if:x:/@whoami/*/role?value
     =:all
 
   /*
-   * User is either root, or all registered users are allowed to upload file.
+   * User is either root, or all registered users, or possible even anonymous guests
+   * are allowed to upload files.
    *
    * Regardless, we include the necessary JavaScript to handle uploading of files.
+   *
+   * Before we do, we create a "batch GUID" to associate with uploads.
    */
+  p5.types.guid.new
   p5.web.get-location-url
   p5.web.include-javascript:@"
 p5.sulphur_upload_files = function(e) {{
@@ -37,7 +41,7 @@ p5.sulphur_upload_files = function(e) {{
   var files = e.target.files, length = files.length, no = 0, has_error = 0;
   for(var i = 0; i < files.length; i++) {{
     var xhr = new XMLHttpRequest(), fd = new FormData();
-    xhr.open('POST', '{0}', true);
+    xhr.open('POST', '{0}/upload', true);
     xhr.onreadystatechange = function() {{
       if (this.readyState == 4) {{
         if (this.status >= 200 && this.status < 300) {{
@@ -49,7 +53,7 @@ p5.sulphur_upload_files = function(e) {{
             if (has_error != 0) {{
               alert(has_error + ' files were not accepted');
             }}
-            window.location.replace(window.location.href);
+            window.location.replace('{0}?batch-id={1}');
           }}
         }} else {{
           alert('Something went really wrong, check your network connection and try again');
@@ -57,12 +61,13 @@ p5.sulphur_upload_files = function(e) {{
       }}
     }};
     fd.append('file', files[i]);
+    fd.append('batch-id', '{1}')
     xhr.send(fd);
   }}
 }};
 "
-    :{0}/upload
-      :x:/@p5.web.get-location-url?value
+    :x:/@p5.web.get-location-url?value
+    :x:/@p5.types.guid.new?value
 
 else
 

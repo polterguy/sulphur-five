@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `files` (
   `username` varchar(500) NOT NULL,
   `sha` varchar(500) NOT NULL,
   `type` varchar(45) NOT NULL,
+  `batchid` varchar(45) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 "
