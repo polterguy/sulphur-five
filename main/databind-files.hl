@@ -38,7 +38,7 @@ if:x:/../*/filter?value
    * Filter was supplied, making sure we use it.
    */
   set:x:/@_filter?value
-    src:"and (username = @exact or name like @filter or description like @filter or filename like @filter)"
+    src:"and (username = @exact or name like @filter or description like @filter or filename like @filter or sha = @exact)"
   eval-x:x:/+/*/*
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
