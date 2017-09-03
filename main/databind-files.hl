@@ -340,6 +340,16 @@ p5.mysql.connect:[sulphur]
                     set-widget-property:x:/-/*/*?value
                       innerValue:x:/@p5.mysql.select/*/*/name?value
 
+                    /*
+                     * Finding meta owner widget, and changing its value accordingly.
+                     */
+                    p5.web.widgets.find-first:x:/../*/_event?value
+                      class:sulphur-meta-owner
+                    set-widget-property:x:/-/*/*?value
+                      innerValue:"{0} ({1})"
+                        :x:/@p5.mysql.select/*/*/username?value
+                        :x:/@p5.mysql.select/*/*/type?value
+
               widgets:databound
 
                 /*
