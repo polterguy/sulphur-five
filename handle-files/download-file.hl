@@ -2,7 +2,7 @@
 /*
  * Invoked when a file should be downloaded.
  *
- * Expects [id] being database id of file.
+ * Expects [sha] being Sha1 value of file.
  */
 
 
@@ -13,8 +13,8 @@
  * First we need to figure out file's path, etc, by selecting its record from the database.
  */
 p5.mysql.connect:[sulphur]
-  p5.mysql.select:@"select * from files where id = @id"
-    @id:x:/../*/id?value
+  p5.mysql.select:@"select * from files where sha = @sha"
+    @sha:x:/../*/sha?value
 
 
 
@@ -72,6 +72,16 @@ for-each:x:/@load-file/*/*/{0}/*/*
 p5.web.header.set:Content-Disposition
   src:@"attachment; filename=""{0}"""
     :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
+
+
+
+
+
+/*
+ * Making sure we set "ETag" header correctly.
+ */
+p5.web.header.set:ETag
+  src:x:/../*/sha?value
 
 
 

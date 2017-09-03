@@ -314,7 +314,7 @@ p5.mysql.connect:[sulphur]
      * Forward evaluating [add] invocations arguments, and adding a widget into
      * [create-widgets] invocation below, for creating a widget wrapping file information.
      */
-    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href|/widgets/*/h3/*/innerValue)|/+/**/_id
+    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href|/widgets/*/h3/*/innerValue)|/+/**(/_id|/_sha)
     add:x:/..p5.mysql.connect/*/create-widgets
       src
 
@@ -478,12 +478,12 @@ p5.mysql.connect:[sulphur]
                     /*
                      * Changing [href] of widget to allow downloading of file.
                      */
-                    _id:x:/@_dp/#/*/id?value
+                    _sha:x:/@_dp/#/*/sha?value
                     p5.web.get-location-url
                     set-widget-property:x:/../*/_event?value
                       href:{0}?download={1}
                         :x:/@p5.web.get-location-url?value
-                        :x:/@_id?value
+                        :x:/@_sha?value
 
 
                 /*
