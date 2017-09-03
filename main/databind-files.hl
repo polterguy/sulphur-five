@@ -206,6 +206,13 @@ p5.mysql.connect:[sulphur]
     create-widget:sulphur-at-end-of-dataset
       parent:sulphur-main-container
       element:hr
+    p5.web.get-location-url
+    create-widget:sulphur-at-end-of-dataset-home
+      parent:sulphur-main-container
+      element:a
+      class:sulphur-home-link
+      href:x:/@p5.web.get-location-url?value
+      innerValue:Home
     p5.web.send-javascript:"p5.sulphur_end_of_dataset = true;"
 
   else-if:x:/@p5.mysql.select/*?count.int
@@ -221,6 +228,7 @@ p5.mysql.connect:[sulphur]
      * of page.
      */
     delete-widget:sulphur-at-end-of-dataset
+    delete-widget:sulphur-at-end-of-dataset-home
     p5.web.send-javascript:"p5.sulphur_end_of_dataset = false;"
 
   /*

@@ -55,6 +55,11 @@
     box-shadow:-2px 2px 5px rgba(0,0,0,.2);
     transition:box-shadow .2s;
 }
+.sulphur-home-link {
+    display:block;
+    text-align:center;
+    font-size:2rem;
+}
 
 
 .sulphur-file-editor {
