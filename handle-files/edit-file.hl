@@ -10,7 +10,8 @@
 
 
 /*
- * Checking if this is a guest, at which point we simply return immediately.
+ * Checking if this is a guest, at which point we simply return immediately,
+ * since guests are never allowed to edit files.
  */
 whoami
 if:x:/@whoami/*/default?value
@@ -27,16 +28,6 @@ if:x:/@whoami/*/default?value
 
 
 /*
- * Making sure we delete session variable, which allows guests to initially
- * edit uploaded files, in case this is setup as an anonymous dropbox.
- */
-p5.web.session.set:sulphur.allow-edit
-
-
-
-
-
-/*
  * Opening database connection, and selecting file.
  */
 p5.mysql.connect:[sulphur]
@@ -44,8 +35,27 @@ p5.mysql.connect:[sulphur]
     @id:x:/../*/id?value
 
   /*
+   * Checking if user is allowed to edit file.
+   */
+  if:x:/@whoami/*/role?value
+    !=:root
+    and:x:/@whoami/*/username?value
+      !=:x:/@p5.mysql.select/*/*/username?value
+
+    /*
+     * User is not root, and he tried to edit a file which he did not own.
+     */
+    micro.windows.info:Sorry, you're not allowed to edit this file
+      class:micro-windows-info warning
+
+    /*
+     * Returning early to avoid user being allowed to edit file.
+     */
+    return
+
+  /*
    * Whenever a root account edits a file, he takes control over the file,
-   * to allow a root account to delete shared files, among other things.
+   * to allow a root account to delete and manage shared files, among other things.
    */
   if:x:/@whoami/*/role?value
     =:root
@@ -101,35 +111,10 @@ p5.mysql.connect:[sulphur]
       class:micro-windows-info success
 
   /*
-   * Checking if user is allowed to edit file.
-   */
-  if:x:/@whoami/*/role?value
-    !=:root
-    and:x:/@whoami/*/username?value
-      !=:x:/@p5.mysql.select/*/*/username?value
-
-    /*
-     * User is not root, and he tried to edit a file which he did not own.
-     */
-    micro.windows.info:Sorry, you're not allowed to edit this file
-      class:micro-windows-info warning
-
-    /*
-     * Returning early to avoid user being allowed to edit file.
-     */
-    return
-
-  /*
-   * Formatting values to display to user.
-   */
-  p5.types.date.format:x:/@p5.mysql.select/*/*/uploaded?value
-    format:"d. MMM yyyy - HH:mm"
-
-  /*
    * Displaying widget to user.
    */
   eval-x:x:/+/**/_id
-  create-widget
+  create-widget:sulphur-file-editor-wrapper
     class:sulphur-file-editor
     widgets
       container
@@ -145,7 +130,7 @@ p5.mysql.connect:[sulphur]
             value:x:/@p5.mysql.select/*/*/name?value
             placeholder:Name of file ...
             title:Name for file
-            onkeydown:@"if (event.keyCode == 13) {p5.$('sulphur-file-name-textbox').raise('onchange');p5.$('sulphur-close-file-editor').raise('.ondone');return false;}"
+            onkeydown:@"if (event.keyCode == 13) {p5.$('sulphur-file-name-textbox').raise('onchange');p5.$('sulphur-close-file-editor').raise('onclick');return false;}"
             oninit
 
               /*
@@ -324,6 +309,7 @@ p5.mysql.connect:[sulphur]
               label
                 for:sulphur-rdo-private
                 innerValue:Private
+
               input:sulphur-rdo-protected
                 type:radio
                 name:sulphur-rdo-protection
@@ -338,6 +324,7 @@ p5.mysql.connect:[sulphur]
               label
                 for:sulphur-rdo-protected
                 innerValue:Protected
+
               input:sulphur-rdo-public
                 type:radio
                 name:sulphur-rdo-protection
@@ -352,30 +339,24 @@ p5.mysql.connect:[sulphur]
               label
                 for:sulphur-rdo-public
                 innerValue:Public
+
           /*
            * Close button.
            */
           a:sulphur-close-file-editor
+            href:#
+            role:button
             class:sulphur-close-file-editor
             innerValue:@"<span class=""icon-close""></span>"
             title:Close editor ...
-            .ondone
+            onclick
 
               /*
-               * Redirecting to app's root URL.
-               */
-              p5.web.get-location-url
-              p5.web.set-location:x:/-?value
-
-            oninit
-
-              /*
-               * Closing window by redirecting to main app's root URL.
+               * Re-databinding the edited file's widget, and deleting edit widget.
                */
               _id:x:/@p5.mysql.select/*/*/id?value
-              p5.web.get-location-url
-              set-widget-property:x:/../*/_event?value
-                href:x:/@p5.web.get-location-url?value
+              sulphur.files.update:x:/@_id?value
+              delete-widget:sulphur-file-editor-wrapper
 
           /*
            * Delete file button.
@@ -452,7 +433,6 @@ p5.mysql.connect:[sulphur]
                   p5.mysql.transaction.commit
 
                   /*
-                   * Reidrecting to app's main root URL.
+                   * Deleting main file editor.
                    */
-                  p5.web.get-location-url
-                  p5.web.set-location:x:/-?value
+                  delete-widget:sulphur-file-editor-wrapper

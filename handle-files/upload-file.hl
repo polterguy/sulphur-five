@@ -40,7 +40,7 @@ if:x:/@select-data/*/*/uploaders?value
   /*
    * Figuring out SHA value of file, to avoid inserting same file multiple times.
    */
-  p5.crypto.hash.create-sha256-file:{0}{1}{2}
+  p5.crypto.hash.create-sha1-file:{0}{1}{2}
     :x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/folder?value
     :x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/prefix?value
     :x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
@@ -56,7 +56,7 @@ if:x:/@select-data/*/*/uploaders?value
      * at which point we don't insert the file.
      */
     p5.mysql.scalar:@"select count(*) from files where sha = @sha"
-      @sha:x:/@p5.crypto.hash.create-sha256-file?value
+      @sha:x:/@p5.crypto.hash.create-sha1-file?value
     if:x:/@p5.mysql.scalar?value.int
       !=:int:0
 
@@ -78,7 +78,7 @@ if:x:/@select-data/*/*/uploaders?value
       @username:x:/@whoami/*/username?value
       @name:"Default name, please change to something relevant ..."
       @description:
-      @sha:x:/@p5.crypto.hash.create-sha256-file?value
+      @sha:x:/@p5.crypto.hash.create-sha1-file?value
 
     /*
      * Return database ID of newly uploaded file.

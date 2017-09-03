@@ -13,7 +13,7 @@
 }
 .sulphur-meta {
     position:absolute;
-    bottom:0;
+    bottom:.5rem;
     right:.5rem;
     font-weight:normal;
     color:#d0d0d0;

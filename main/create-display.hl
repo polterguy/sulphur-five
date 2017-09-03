@@ -142,6 +142,7 @@ create-widget
              */
             button:sulphur-search-button
               innerValue:@"<span class=""icon-search""></span>"
+              title:Search
               onclick
 
                 /*
@@ -157,6 +158,20 @@ create-widget
                  * Setting focus to search textbox again.
                  */
                 micro.page.set-focus:sulphur-search
+
+            /*
+             * Clear search button.
+             */
+            button:sulphur-clear-button
+              innerValue:@"<span class=""icon-remove""></span>"
+              title:Clear all filter conditions
+              onclick
+
+                /*
+                 * Redirecting to app's root URL.
+                 */
+                p5.web.get-location-url
+                p5.web.set-location:x:/-?value
 
     /*
      * Wrapper for settings button, upload button, home button, and file input
