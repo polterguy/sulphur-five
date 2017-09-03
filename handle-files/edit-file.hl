@@ -436,3 +436,9 @@ p5.mysql.connect:[sulphur]
                    * Deleting main file editor.
                    */
                   delete-widget:sulphur-file-editor-wrapper
+
+                  /*
+                   * Making sure we delete the widget wrapping the current file
+                   * from our "grid".
+                   */
+                  sulphur.files.delete:x:/@_id?value

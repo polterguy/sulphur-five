@@ -76,7 +76,7 @@ if:x:/@select-data/*/*/uploaders?value
       @filename:x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
       @prefix:x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/prefix?value
       @username:x:/@whoami/*/username?value
-      @name:"Default name, please change to something relevant ..."
+      @name:x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
       @description:
       @sha:x:/@p5.crypto.hash.create-sha1-file?value
 

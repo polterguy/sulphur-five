@@ -34,27 +34,25 @@ if:x:/@whoami/*/role?value
 p5.sulphur_upload_files = function(e) {{
   var obsc = p5.$('sulphur-upload-obscurer').el;
   obsc.style.display = 'block';
-  var files = e.target.files;
+  var files = e.target.files, length = files.length, no = 0, has_error = 0;
   for(var i = 0; i < files.length; i++) {{
-    var xhr = new XMLHttpRequest();
-    var fd = new FormData();
+    var xhr = new XMLHttpRequest(), fd = new FormData();
     xhr.open('POST', '{0}', true);
-    var cur = i;
     xhr.onreadystatechange = function() {{
-      if (xhr.readyState == 4) {{
-        obsc.style.display = 'none';
-        if (xhr.status >= 200 && xhr.status < 300) {{
-          if (xhr.responseText == 'ERROR') {{
-            alert('File was not accepted');
-            throw 'Could not upload files';
-          }} else {{
-            if (cur == files.length - 1) {{
-              window.location.replace(window.location.href);
+      if (this.readyState == 4) {{
+        if (this.status >= 200 && this.status < 300) {{
+          if (this.responseText == 'ERROR') {{
+            has_error += 1;
+          }}
+          if (++no == length) {{
+            obsc.style.display = 'none';
+            if (has_error != 0) {{
+              alert(has_error + ' files were not accepted');
             }}
+            window.location.replace(window.location.href);
           }}
         }} else {{
           alert('Something went really wrong, check your network connection and try again');
-          throw 'Could not upload files';
         }}
       }}
     }};
