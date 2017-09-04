@@ -251,7 +251,7 @@ p5.mysql.connect:[sulphur]
       element:a
       class:sulphur-home-link
       href:x:/@_app-root-url?value
-      innerValue:Home
+      innerValue:See all files
     p5.web.send-javascript:"p5.sulphur_end_of_dataset = true;"
 
   else-if:x:/@p5.mysql.select/*?count.int
