@@ -29,11 +29,9 @@ if:x:/@select-data/*/*/uploaders?value
   or:x:/@select-data/*/*/uploaders?value
     =:users
     and:x:/@whoami/*/default?value
-      !=:bool:true
-  or:x:/@select-data/*/*/uploaders?value
+      not
+  or:x:/@whoami/*/role?value
     =:root
-    and:x:/@whoami/*/role?value
-      =:root
 
   /*
    * Somehow, user is allowed to upload files to server.
