@@ -69,7 +69,7 @@ p5.sulphur_upload_files = function(e) {{
             if (has_error != 0) {{
               alert(has_error + ' files were not accepted');
             }}
-            window.location.replace('{0}/batch/{1}');
+            window.location.replace('{0}batch/{1}');
           }}
         }} else {{
           alert('Something went really wrong, check your network connection and try again');
@@ -150,12 +150,6 @@ create-widget
               placeholder:Search ...
               type:text
               onkeydown:@"if (event.keyCode == 13) {p5.$('sulphur-search-button').raise('onclick');return false;}"
-              oninit
-
-                /*
-                 * Setting initial focus to search textbox.
-                 */
-                micro.page.set-focus:x:/../*/_event?value
 
             /*
              * Search button.
@@ -253,10 +247,203 @@ create-widget
                  * Upload file button.
                  */
                 button:sulphur-upload-widget
-                  style:"padding-left:45px;padding-right:45px;"
+                  style:"padding-left:35px;padding-right:35px;"
                   innerValue:@"<span class=""icon-upload""></span>"
                   title:Upload file ...
                   onclick:@"document.querySelector('.sulphurAttachmentFileInput').click();return false;"
+
+                /*
+                 * Delete entire batch button.
+                 */
+                button:sulphur-delete-batch-widget
+                  innerValue:@"<span class=""icon-trash""></span>"
+                  title:Delete entire batch
+                  oninit
+
+                    /*
+                     * Verifying that user is viewing an entire batch, and that he
+                     * is root, and if not, we delete this entire widget.
+                     */
+                    whoami
+                    p5.web.get-location-url
+                    split:x:/-?value
+                      =:/
+                    if:x:/@split/0/-2?name
+                      !=:batch
+                      or:x:/@whoami/*/role?value
+                        !=:root
+
+                      /*
+                       * Either user is not root, or the current URL is not for
+                       * a specific batch.
+                       *
+                       * Regardless, we entirely delete the widget.
+                       */
+                      delete-widget:x:/../*/_event?value
+
+                  onclick
+
+                    /*
+                     * Asking user to confirm action.
+                     */
+                    create-widgets
+                      micro.widgets.modal:sulphur-confirm-batch-deletion
+                        widgets
+                          h3
+                            innerValue:Please confirm action
+                          p
+                            innerValue:This will delete the entire batch. Are you sure you want to do this? This action cannot be undone.
+                          div
+                            class:right
+                            widgets
+                              div
+                                class:strip
+                                style:"display:inline-block;"
+                                widgets
+                                  button
+                                    innerValue:Yes
+                                    oninit
+                                      micro.page.set-focus:x:/../*/_event?value
+                                    onclick
+
+                                      /*
+                                       * Forward evaluated above.
+                                       */
+                                      _app-root-url:x:/../*/_app-root-url?value
+
+                                      /*
+                                       * Figuring out ID of batch.
+                                       */
+                                      p5.web.get-location-url
+                                      split:x:/-?value
+                                        =:/
+
+                                      /*
+                                       * Opening database connection, and deleting entire batch,
+                                       * making sure we physically delete all files in the process.
+                                       */
+                                      whoami
+                                      p5.mysql.connect:[sulphur]
+
+                                        /*
+                                         * Making sure we create a transaction, to not allow for
+                                         * "dangling files" in the system.
+                                         */
+                                        p5.mysql.transaction.begin
+
+                                          /*
+                                           * We need to select all files, such that we can find them
+                                           * physically on disc, to delete them.
+                                           */
+                                          p5.mysql.select:@"select * from files where batchid = @batchid"
+                                            @batchid:x:/@split/0/-?name
+
+                                          /*
+                                           * Deleting database entries for files, making sure we don't
+                                           * delete any files that are private, and that does not belong 
+                                           * to the current user, unless they belong to "guest".
+                                           */
+                                          p5.mysql.delete:@"delete from files where batchid = @batchid and (username = @username or username = 'guest' or type != 'private')"
+                                            @batchid:x:/@split/0/-?name
+                                            @username:x:/@whoami/*/username?value
+
+                                          /*
+                                           * Looping through each file, and deleting it physically from disc.
+                                           */
+                                          for-each:x:/@p5.mysql.select/*
+
+                                            /*
+                                             * Figuring out if this is a private file, not belonging to
+                                             * the currently logged in user.
+                                             */
+                                            if:x:/@_dp/#/*/type?value
+                                              =:private
+                                              and:x:/@whoami/*/username?value
+                                                !=:x:/@_dp/#/*/username?value
+                                              and:x:/@whoami/*/username?value
+                                                !=:guest
+
+                                              /*
+                                               * Current file in batch is privately owned by a user,
+                                               * and it does not belong to "guest".
+                                               */
+                                              continue
+
+                                            /*
+                                             * Figuring out file's folder.
+                                             */
+                                            _folder
+                                            if:x:/@_dp/#/*/username?value
+                                              =:guest
+
+                                              /*
+                                               * Guest can only have private files.
+                                               */
+                                              set:x:/@_folder?value
+                                                src:/common/documents/private/
+
+                                            else
+
+                                              /*
+                                               * Figuring out file's folder according to protection,
+                                               * and the user's username.
+                                               */
+                                              if:x:/@_dp/#/*/type?value
+                                                =:public
+
+                                                /*
+                                                 * File is public.
+                                                 */
+                                                set:x:/@_folder?value
+                                                  src:/common/documents/public/
+
+                                              else-if:x:/@_dp/#/*/type?value
+                                                =:protected
+
+                                                /*
+                                                 * File is protected.
+                                                 */
+                                                set:x:/@_folder?value
+                                                  src:/common/documents/private/
+
+                                              else-if:x:/@_dp/#/*/type?value
+                                                =:private
+
+                                                /*
+                                                 * File is private, and it belongs to the currently
+                                                 * logged in user.
+                                                 */
+                                                set:x:/@_folder?value
+                                                  src:~/documents/private/
+
+                                            /*
+                                             * Physically deleting file on disc.
+                                             */
+                                            delete-file:{0}{1}{2}
+                                              :x:/@_folder?value
+                                              :x:/@_dp/#/*/prefix?value
+                                              :x:/@_dp/#/*/filename?value
+
+                                          /*
+                                           * Files were successfully deleted from disc, hence we
+                                           * can safely commit transaction.
+                                           * Committing transaction.
+                                           */
+                                          p5.mysql.transaction.commit
+
+                                      /*
+                                       * Redirecting to app's root url.
+                                       */
+                                      p5.web.set-location:x:/@_app-root-url?value
+
+                                  button
+                                    innerValue:No
+                                    onclick
+
+                                      /*
+                                       * Simply deleting modal confirmation widget.
+                                       */
+                                      delete-widget:sulphur-confirm-batch-deletion
 
                 /*
                  * Home button, leads user to main desktop.
