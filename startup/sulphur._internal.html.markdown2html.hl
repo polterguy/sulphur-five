@@ -1,7 +1,7 @@
 
 /*
  * Creates the Active Event that transforms Markdown to HTML, 
- * adding #hash-tag links in the process.
+ * adding #hash-tag links in the process, adding up rel="noreferrer", etc.
  */
 create-event:sulphur._internal.html.markdown2html
 
@@ -32,10 +32,11 @@ create-event:sulphur._internal.html.markdown2html
 
   /*
    * Running through each hyperlink, and making sure every hyperlink displays its
-   * actual href.
+   * actual domain as a part of its anchor text, in addition to a rel="noreferrer" 
+   * attribute.
    *
-   * Notice, this is a security feature, which prevents a malicous file editor to
-   * create hyperlinks, leading to URLs, which are "cloaked".
+   * Notice, this is a security feature, which prevents a malicous file editor/user
+   * to create hyperlinks, leading to URLs, which are "cloaked".
    *
    * Although this is technically unlikely to occur, since only registered users
    * can edit files - In theory, an unintentional link, leading to a malicous website,
@@ -44,6 +45,12 @@ create-event:sulphur._internal.html.markdown2html
    * By simply displaying the root domain for each URL, we reduce the risk of 
    * such "phishing" attacks significantly, by displaying the domain all links
    * leads to, to a user, before he clicks the links.
+   *
+   * In addition, we add up an explicit rel='noreferrer' to all hyperlinks, to
+   * make sure any links visited, never knows the origin of the visitor, and which
+   * website the visitor comes from.
+   *
+   * This is basically "super defensive coding" in practive!!
    */
   for-each:x:/@html2lambda/**/a
     split:x:/@_dp/#/*/\@href?value
@@ -54,13 +61,19 @@ create-event:sulphur._internal.html.markdown2html
       src:{0} (<strong>{1}</strong>)
         :x:/@_dp/#/*/\#text?value
         :x:/@split/0?name
+    add:x:/@_dp/#
+      src
+        @rel:noreferrer
 
   /*
    * Running through "whitelist", making sure that content does not contain malicious HTML elements.
    *
    * Basically, this will remove everything not found in our "/configuration/html-whitelist.hl" file.
+   *
+   * Notice, our sub-set of legal HTML elements here, is quite small.
+   * For instance, it is not legally allowed to display images in any ways!
    */
-  load-file:@SEPHIA/configuration/html-whitelist.hl
+  load-file:@SULPHUR/configuration/html-whitelist.hl
   for-each:x:/@html2lambda/**
     if:x:/@load-file/*/*/\{0}
       :x:/@_dp/#?name
