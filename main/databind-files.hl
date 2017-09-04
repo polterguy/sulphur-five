@@ -635,7 +635,7 @@ p5.mysql.connect:[sulphur]
         style:"margin-left:auto;margin-right:auto;margin-bottom:3rem;"
         element:h1
         innerValue:{0}'s files
-          :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/username?value
+          :x:/../*/split/[0,1]/2?name
 
     else-if:x:/../*/split/[0,1]/1?name
       =:batch

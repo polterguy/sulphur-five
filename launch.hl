@@ -33,8 +33,15 @@ if:x:/@split/1?name
    */
   try
 
+    /*
+     * Evaluating file responsible for accepting uploads.
+     */
     micro.evaluate.file:@SULPHUR/handle-files/upload-file.hl
-    p5.web.echo:x:/-?value
+
+    /*
+     * Returning return value from uploader to client.
+     */
+    p5.web.echo:x:/@micro.evaluate.file?value
 
   catch
 

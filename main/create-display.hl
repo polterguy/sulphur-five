@@ -59,20 +59,20 @@ p5.sulphur_upload_files = function(e) {{
     var xhr = new XMLHttpRequest(), fd = new FormData();
     xhr.open('POST', '{0}/upload', true);
     xhr.onreadystatechange = function() {{
-      if (this.readyState == 4) {{
-        if (this.status >= 200 && this.status < 300) {{
-          if (this.responseText == 'ERROR') {{
-            has_error += 1;
+      if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {{
+        if (this.responseText === 'ERROR') {{
+          has_error += 1;
+        }}
+        if (++no == length) {{
+          obsc.style.display = 'none';
+          if (has_error != 0) {{
+            alert(has_error + ' files were not accepted');
           }}
-          if (++no == length) {{
-            obsc.style.display = 'none';
-            if (has_error != 0) {{
-              alert(has_error + ' files were not accepted');
-            }}
+          if (no == has_error) {{
+            window.location.replace(window.location);
+          }} else {{
             window.location.replace('{0}batch/{1}');
           }}
-        }} else {{
-          alert('Something went really wrong, check your network connection and try again');
         }}
       }}
     }};

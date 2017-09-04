@@ -114,16 +114,16 @@ if:x:/@select-data/*/*/uploaders?value
       @batchid:x:/@_batch-id?value
 
     /*
-     * Return "SUCCESS" to caller.
+     * Return SHA1 value of file to caller.
      */
-    return:SUCCESS
+    return:x:/@p5.crypto.hash.create-sha1-file?value
 
 else
 
   /*
    * User is not allowed to upload file, returning "ERROR" to caller.
    *
-   * Notice, we don't give any error information about what went wrong, since
+   * Notice, we don't give any contextual information about what went wrong, since
    * that would give a potential adversary meta information, he could use to
    * extract information about the system's state.
    */
