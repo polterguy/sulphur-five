@@ -8,6 +8,22 @@
 
 
 /*
+ * Storing the app's "root" URL for later references, to allow us to create relative
+ * URLs and hyperlinks.
+ */
+_app-root-url
+p5.io.unroll-path:@SULPHUR/
+split:x:/-?value
+  =:/
+set:x:/@_app-root-url?value
+  src:/{0}/
+    :x:/@split/0/-?name
+
+
+
+
+
+/*
  * Checking settings to figure out who can upload files.
  *
  * This is necessary in order to be able to enable/disable uploading of files,
@@ -17,12 +33,12 @@ select-data:x:/*/*/sulphur.settings
 whoami
 if:x:/@whoami/*/role?value
   =:root
+  or:x:/@select-data/*/*/uploaders?value
+    =:all
   or:x:/@whoami/*/default?value
     not
     and:x:/@select-data/*/*/uploaders?value
       =:users
-  or:x:/@select-data/*/*/uploaders?value
-    =:all
 
   /*
    * User is either root, or all registered users, or possible even anonymous guests
@@ -53,7 +69,7 @@ p5.sulphur_upload_files = function(e) {{
             if (has_error != 0) {{
               alert(has_error + ' files were not accepted');
             }}
-            window.location.replace('{0}?batch-id={1}');
+            window.location.replace('{0}/batch/{1}');
           }}
         }} else {{
           alert('Something went really wrong, check your network connection and try again');
@@ -66,7 +82,7 @@ p5.sulphur_upload_files = function(e) {{
   }}
 }};
 "
-    :x:/@p5.web.get-location-url?value
+    :x:/@_app-root-url?value
     :x:/@p5.types.guid.new?value
 
 else
@@ -86,7 +102,7 @@ else
 
 
 /*
- * Verifying user is "root", and if not, we remove settings.
+ * Verifying user is "root", and if not, we remove the settings button.
  */
 if:x:/@whoami/*/role?value
   !=:root
@@ -104,6 +120,7 @@ if:x:/@whoami/*/role?value
 /*
  * Creating main display.
  */
+eval-x:x:/+/**/_app-root-url
 create-widget
   parent:sulphur-main-container
   class:row
@@ -173,7 +190,7 @@ create-widget
                 /*
                  * Redirecting to app's root URL.
                  */
-                p5.web.get-location-url
+                _app-root-url:x:/@_app-root-url?value
                 p5.web.set-location:x:/-?value
 
     /*

@@ -50,29 +50,6 @@ else
 
 
 /*
- * Figuring out who can view files.
- */
-if:x:/@select-data/*/*/viewers?value
-  =:reg-users
-
-  /*
-   * Any user can upload files.
-   */
-  add:x:/../*/create-widgets/**/=viewers/./**/=reg-users
-    src:checked
-
-else
-
-  /*
-   * Only root can upload files.
-   */
-  add:x:/../*/create-widgets/**/=viewers/./**/=guest
-    src:checked
-
-
-
-
-/*
  * Creates a modal widget allowing user to edit settings.
  */
 create-widgets
@@ -89,14 +66,6 @@ create-widgets
             Guests can upload files:all
             Only registered users:users
             Only root can upload:root
-        p
-          innerValue:@"Who can view public files on your server? Notice, if you set this to everybody, then also unregistered guests 
-will have access to view and download public files."
-        radio-group
-          .data-field:viewers
-          options
-            Everybody:guest
-            Only users:reg-users
         div
           class:right
           widgets
@@ -125,7 +94,6 @@ will have access to view and download public files."
                       src
                         sulphur.settings
                           uploaders:x:/@micro.widgets.wizard-form.value/*/uploaders?value
-                          viewers:x:/@micro.widgets.wizard-form.value/*/viewers?value
 
                     /*
                      * Deleting modal settings widget.

@@ -21,8 +21,42 @@ p5.mysql.connect:[sulphur]
 
 
 /*
- * TODO: Verify user has access.
+ * Verifying user has access to file.
  */
+if:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/type?value
+  !=:public
+
+  /*
+   * File is not publicly available.
+   *
+   * Now checking if this is a logged in user, and if not, we deny him to download
+   * the file.
+   */
+  whoami
+  if:x:/@whoami/*/default?value
+
+    /*
+     * User is not logged in, and file is not publicly available.
+     */
+    p5.web.response.set-status-code:403
+    p5.web.echo:Access denied!
+    return
+
+  if:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/type?value
+    =:private
+
+    /*
+     * File is private, verifying currently logged in user is the file's owner.
+     */
+    if:x:/@whoami/*/username?value
+      !=:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/username?value
+
+      /*
+       * File is private, and the file does not belong to currently logged in user.
+       */
+      p5.web.response.set-status-code:403
+      p5.web.echo:Access denied!
+      return
 
 
 

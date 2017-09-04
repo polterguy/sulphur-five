@@ -10,22 +10,6 @@ container
   oninit
 
     /*
-     * Verifying user is logged in, and if not, deleting widget altogether, 
-     * and returning early, unless everybody are allowed to view files.
-     */
-    whoami
-    select-data:x:/*/*/sulphur.settings
-    if:x:/@whoami/*/default?value
-      and:x:/@select-data/*/*/viewers?value
-        !=:guest
-
-      /*
-       * User is not logged in, simply deleting entire icon.
-       */
-      delete-widget:x:/../*/_event?value
-      return
-
-    /*
      * Getting URL to point correctly.
      */
     p5.io.unroll-path:@SULPHUR/
@@ -42,23 +26,6 @@ container
       oninit
 
         /*
-         * Making sure user is logged in, and if not, we don't display any count at all.
-         */
-        whoami
-        select-data:x:/*/*/sulphur.settings
-        if:x:/@whoami/*/default?value
-          and:x:/@select-data/*/*/viewers?value
-            !=:guest
-
-          /*
-           * User is not logged in, returning early.
-           *
-           * Notice, if this occurs, widget is already deleted anyways.
-           */
-          return
-
-
-        /*
          * Doing a count of files that current user (or guest) is allowed to access,
          * and adding the count to icon, to illustrate how many available files there exists.
          */
@@ -71,14 +38,28 @@ container
           set:x:/@_sql?value
             src:@"select count(*) from files where type = 'public'"
 
-        else
+        else-if:x:/@whoami/*/role?value
+          =:root
 
           /*
-           * User is logged in, displaying count of all protected files, 
-           * public files, and files belonging to user.
+           * User is logged in as root, displaying count of all protected files, 
+           * public files, and files belonging to user - In addition to all private 
+           * files belonging to "guest".
            */
           set:x:/@_sql?value
             src:@"select count(*) from files where type = 'public' or type = 'protected' or username = @username or username = 'guest'"
+          add:x:/../**/p5.mysql.scalar
+            src
+              @username:x:/@whoami/*/username?value
+
+        else
+
+          /*
+           * User is logged in, but he is not root, displaying count of all protected files, 
+           * public files, and files belonging to user.
+           */
+          set:x:/@_sql?value
+            src:@"select count(*) from files where type = 'public' or type = 'protected' or username = @username"
           add:x:/../**/p5.mysql.scalar
             src
               @username:x:/@whoami/*/username?value

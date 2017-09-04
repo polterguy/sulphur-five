@@ -2,7 +2,8 @@
 /*
  * Launcher file for Sulphur Five.
  *
- * This file is evaluated (without any parameters) when Sulphur is launched by the user.
+ * This file is evaluated when Sulphur is launched by the user, with [url] being
+ * the URL relative to P5 main folder.
  */
 
 
@@ -10,33 +11,62 @@
 
 
 /*
- * Checking if this is an upload request, and if so, delegating work to uploader.
+ * Splitting URL, to figure out which type of request this is.
  */
-p5.io.unroll-path:@SULPHUR/
-split:x:/-?value
+split:x:/../*/url?value
   =:/
-if:x:/../*/url?value
-  =:/{0}/upload
-    :x:/@split/0/-?name
+
+
+
+
+
+/*
+ * Checking if this is an upload request, and if so, delegating work to uploader,
+ * and returning early.
+ */
+if:x:/@split/1?name
+  =:upload
 
   /*
-   * This is an upload request, delegating work to file responsible for handling it,
+   * This is an upload request, delegating work to file responsible for handling our upload,
    * making sure we return the ID of file to client, if it was successfully uploaded.
    */
   try
 
     micro.evaluate.file:@SULPHUR/handle-files/upload-file.hl
-    p5.web.echo:x:/-?value
+    p5.web.echo:SUCCESS
 
   catch
 
     /*
      * Notice, we do not return the exception message, since that would allow an adversary to
-     * understand what goes wrong, which would widen the attack surface, and compromise the
-     * security of the system!
+     * understand what goes wrong, which would increase the attack surface, and compromise the
+     * security of the system.
      */
     p5.web.echo:ERROR
 
+  /*
+   * Returning early after upload has been handled.
+   */
+  return
+
+
+
+
+
+/*
+ * Checking if this is a request to download a file, at which point we initiate a file
+ * download request, and return early.
+ */
+if:x:/@split/1?name
+  =:download
+
+  /*
+   * This is a download request, serving file and returning early.
+   */
+  eval-x:x:/+/*
+  micro.evaluate.file:@SULPHUR/handle-files/download-file.hl
+    sha:x:/@split/2?name
   return
 
 
@@ -47,7 +77,7 @@ if:x:/../*/url?value
  * Creating main content container.
  *
  * This is the place where "everything" is stored in Sulphur, and is used to display
- * the files list. upload button, etc.
+ * the list of files, upload button, etc.
  *
  * Notice, we only use one "container" widget from Micro for everything related to Sulphur.
  */
@@ -59,56 +89,14 @@ create-container-widget:sulphur-main-container
 
 
 /*
- * Including Micro, and adding Awesome Fonts, and serious skin.
+ * Including Micro, adding Awesome Fonts, serious skin, in addition to Sulphur's
+ * main CSS file.
  */
 p5.web.include-css-file:@MICRO/media/main.css
 p5.web.include-css-file:@MICRO/media/ext.css
 p5.web.include-css-file:@MICRO/media/fonts.css
 p5.web.include-css-file:@MICRO/media/skins/serious.css
 p5.web.include-css-file:@SULPHUR/media/main.css
-
-
-
-
-
-/*
- * Verifying user is logged in, or that app is available for everyone,
- * including guest accounts.
- */
-whoami
-select-data:x:/*/*/sulphur.settings
-if:x:/@whoami/*/default?value
-  and:x:/@select-data/*/*/viewers?value
-    !=:guest
-
-  /*
-   * User is not logged in, and app is restricted to only logged in users.
-   */
-  p5.core.login
-
-  /*
-   * Returning early to abort evaluating the rest of our file.
-   */
-  return
-
-
-
-
-
-/*
- * Checking if this is a request for a file, at which point we initiate a file
- * download request, and return early.
- */
-p5.web.query.get:download
-if:x:/-/*?value
-
-  /*
-   * This is a download request, serving file and returning early.
-   */
-  eval-x:x:/+/*
-  micro.evaluate.file:@SULPHUR/handle-files/download-file.hl
-    sha:x:/@p5.web.query.get/*?value
-  return
 
 
 

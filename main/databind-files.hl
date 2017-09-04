@@ -69,16 +69,31 @@ if:x:/@whoami/*/default?value
   set:x:/@_where?value
     src:"type = 'public'"
 
+else-if:x:/@whoami/*/role?value
+  =:root
+
+  /*
+   * User is root.
+   *
+   * Hence giving him access to all "protected" files, in addition to all of user's
+   * own files, and all of guest's files, including guest's private files.
+   */
+  set:x:/@_where?value
+    src:"(username = @username or username = 'guest' or type = 'protected' or type = 'public')"
+  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
+    src
+      @username:x:/@whoami/*/username?value
+
 else
 
   /*
    * User is not guest, but an actual logged in user.
    *
    * Hence giving him access to also "protected" files, in addition to all of user's
-   * own files, and all of guest's files, including guest's private files.
+   * own files.
    */
   set:x:/@_where?value
-    src:"(username = @username or username = 'guest' or type = 'protected' or type = 'public')"
+    src:"(username = @username or type = 'protected' or type = 'public')"
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
       @username:x:/@whoami/*/username?value
@@ -92,6 +107,11 @@ else
  */
 _more
 if:x:/../*/more?value
+
+  /*
+   * This is a grid "feed operation", and we should not clear the grid, but rather
+   * feed it with more data.
+   */
   set:x:/@_more?value
     src:"and id < @more"
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
@@ -103,33 +123,62 @@ if:x:/../*/more?value
 
 
 /*
- * Checking if there is an HTTP GET paremeter further filtering out files 
- * according to users.
+ * Parsing URL, such that we can figure out what types of files the client
+ * wants to display.
  */
 _who
-p5.web.query.get:user
-if:x:/../*/p5.web.query.get/*/user?value
-
-  /*
-   * Client wants to filter away all files not belonging to a specific user.
-   */
-  set:x:/@_who?value
-    src:"and username = @username2"
-  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
-    src
-      @username2:x:/../*/p5.web.query.get/*/user?value
+p5.web.get-location-url
+p5.web.get-root-location
+replace:x:/@p5.web.get-location-url?value
+  src:x:/@p5.web.get-root-location?value
+split:x:/@replace?value
+  =:/
 
 
 
 
 
 /*
- * Checking if there is an HTTP GET paremeter further filtering out files 
- * according to a specific "batch-id".
+ * Storing the app's "root" URL for later references, to allow us to create relative
+ * URLs and hyperlinks.
+ */
+_app-root-url
+p5.io.unroll-path:@SULPHUR/
+split:x:/-?value
+  =:/
+set:x:/@_app-root-url?value
+  src:/{0}/
+    :x:/@split/0/-?name
+
+
+
+
+
+/*
+ * Checking if we should only show items belonging to a specific user.
+ */
+if:x:/../*/split/[0,1]/1?name
+  =:user
+
+  /*
+   * Client wants to only see files belonging to a specific user.
+   */
+  set:x:/@_who?value
+    src:"and username = @username2"
+  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
+    src
+      @username2:x:/../*/split/[0,1]/2?name
+
+
+
+
+
+/*
+ * Checking if we should only show items belonging to a specific batch upload.
  */
 _batch
-p5.web.query.get:batch-id
-if:x:/@p5.web.query.get/*?value
+if:x:/../*/split/[0,1]/1?name
+  =:batch
 
   /*
    * Client wants to filter away all files not belonging to a specific user.
@@ -138,28 +187,27 @@ if:x:/@p5.web.query.get/*?value
     src:"and batchid = @batch"
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
-      @batch:x:/../*/p5.web.query.get/*/batch-id?value
+      @batch:x:/../*/split/[0,1]/2?name
 
 
 
 
 
 /*
- * Checking if there is an HTTP GET paremeter wanting to only display file
- * matching specified sha value.
+ * Checking if we should only show the file matching the given SHA1.
  */
 _sha
-p5.web.query.get:sha
-if:x:/@p5.web.query.get/*?value
+if:x:/../*/split/[0,1]/1?name
+  =:sha
 
   /*
-   * Client wants to view only file matching specified sha value.
+   * Client wants to view only file matching specified SHA1 value.
    */
   set:x:/@_sha?value
     src:"and sha = @sha"
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
-      @sha:x:/../*/p5.web.query.get/*/sha?value
+      @sha:x:/../*/split/[0,1]/2?name
 
 
 
@@ -177,14 +225,6 @@ p5.mysql.connect:[sulphur]
     :x:/@_batch?value
     :x:/@_sha?value
     @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
-
-  /*
-   * Storing the ID of the last record we fetched in ViewState, in case there
-   * comes another request for "more" items later, at which point we extract
-   * the last ID, and select files from that point and onwards.
-   */
-  p5.web.viewstate.set:sulphur.last-file-id
-    src:x:/@p5.mysql.select/0/-/*/id?value
 
   /*
    * Making sure we display "end of dataset ruler" if we are at end of dataset,
@@ -206,12 +246,11 @@ p5.mysql.connect:[sulphur]
     create-widget:sulphur-at-end-of-dataset
       parent:sulphur-main-container
       element:hr
-    p5.web.get-location-url
     create-widget:sulphur-at-end-of-dataset-home
       parent:sulphur-main-container
       element:a
       class:sulphur-home-link
-      href:x:/@p5.web.get-location-url?value
+      href:x:/@_app-root-url?value
       innerValue:Home
     p5.web.send-javascript:"p5.sulphur_end_of_dataset = true;"
 
@@ -232,10 +271,12 @@ p5.mysql.connect:[sulphur]
     p5.web.send-javascript:"p5.sulphur_end_of_dataset = false;"
 
   /*
-   * Retrieving app's root URL, to allow for later creating hyperlinks that are
-   * relative to app.
+   * Storing the ID of the last record we fetched in ViewState, in case there
+   * comes another request for "more" items later, at which point we extract
+   * the last ID, and select files from that point and onwards.
    */
-  p5.web.get-location-url
+  p5.web.viewstate.set:sulphur.last-file-id
+    src:x:/@p5.mysql.select/0/-/*/id?value
 
   /*
    * Looping through each result from above, and creating one widget for each result.
@@ -257,6 +298,10 @@ p5.mysql.connect:[sulphur]
 
     /*
      * Figuring out file size.
+     *
+     * However, before we can figure out the file's size, we'll need to figure
+     * out its exact location, which varies according to who owns the file, and
+     * which type of protection the file has.
      */
     _folder
     if:x:/@_dp/#/*/username?value
@@ -276,8 +321,7 @@ p5.mysql.connect:[sulphur]
       switch:x:/@_dp/#/*/type?value
         case:private
           set:x:/@_folder?value
-            src:/users/{0}/documents/private/
-              :x:/@_dp/#/*/username?value
+            src:~/documents/private/
         case:protected
           set:x:/@_folder?value
             src:/common/documents/private/
@@ -295,7 +339,7 @@ p5.mysql.connect:[sulphur]
       :x:/@_dp/#/*/filename?value
 
     /*
-     * Dividing size on 1024 to figure out KB size of file.
+     * Dividing file size by 1024 to figure out KB size of file.
      */
     set:x:/@_length?value
       /:x:/@p5.io.file.get-length/*?value.decimal
@@ -305,6 +349,8 @@ p5.mysql.connect:[sulphur]
      * Notice, we don't display the date, unless user is actually logged in, but
      * mask it, to avoid giving away meta information about where the file might have
      * originally surfaced initially.
+     *
+     * Hence, the date property of the file is actually "protected information".
      */
     if:x:/@whoami/*/default?value
       set:x:/@p5.types.date.format?value
@@ -314,7 +360,7 @@ p5.mysql.connect:[sulphur]
      * Forward evaluating [add] invocations arguments, and adding a widget into
      * [create-widgets] invocation below, for creating a widget wrapping file information.
      */
-    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href|/widgets/*/h3/*/innerValue)|/+/**(/_id|/_sha)
+    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href|/widgets/*/h3/*/innerValue)|/+/**(/_id|/_sha|/_app-root-url)
     add:x:/..p5.mysql.connect/*/create-widgets
       src
 
@@ -387,6 +433,9 @@ p5.mysql.connect:[sulphur]
                     /*
                      * Finding description widget, transforming description to
                      * to HTML, and updating its value.
+                     *
+                     * TODO: Make sure Markdown invocation does not allow for 
+                     * malicious HTML injection.
                      */
                     markdown2html:x:/@p5.mysql.select/*/*/description?value
                     p5.web.widgets.find-first:x:/../*/_event?value
@@ -415,13 +464,13 @@ p5.mysql.connect:[sulphur]
               widgets:databound
 
                 /*
-                 * Displays name of file.
+                 * Hyperlink to file that displays its name.
                  *
                  * Not filename, but friendly "header" for file that is.
                  */
                 a
-                  href:{0}?sha={1}
-                    :x:/@p5.web.get-location-url?value
+                  href:{0}sha/{1}
+                    :x:/@_app-root-url?value
                     :x:/@_dp/#/*/sha?value
                   widgets
                     h3
@@ -441,24 +490,24 @@ p5.mysql.connect:[sulphur]
                       innerValue:"{0} ({1})"
                         :x:/@_dp/#/*/username?value
                         :x:/@_dp/#/*/type?value
-                      href:"{0}?user={1}"
-                        :x:/@p5.web.get-location-url?value
+                      href:"{0}user/{1}"
+                        :x:/@_app-root-url?value
                         :x:/@_dp/#/*/username?value
                     span
                       innerValue:" - "
                     a
                       class:sulphur-meta-batch
                       innerValue:batch
-                      href:"{0}?batch-id={1}"
-                        :x:/@p5.web.get-location-url?value
+                      href:"{0}batch/{1}"
+                        :x:/@_app-root-url?value
                         :x:/@_dp/#/*/batchid?value
                     br
                     a
                       class:sulphur-meta-sha
                       innerValue:Sha1 {0}
                         :x:/@_dp/#/*/sha?value
-                      href:"{0}?sha={1}"
-                        :x:/@p5.web.get-location-url?value
+                      href:"{0}sha/{1}"
+                        :x:/@_app-root-url?value
                         :x:/@_dp/#/*/sha?value
                     span
                       innerValue:"<br/>Filename; '{2}' - Uploaded; {1} - {0:n0}KB"
@@ -479,10 +528,10 @@ p5.mysql.connect:[sulphur]
                      * Changing [href] of widget to allow downloading of file.
                      */
                     _sha:x:/@_dp/#/*/sha?value
-                    p5.web.get-location-url
+                    _app-root-url:x:/@_app-root-url?value
                     set-widget-property:x:/../*/_event?value
-                      href:{0}?download={1}
-                        :x:/@p5.web.get-location-url?value
+                      href:{0}download/{1}
+                        :x:/@_app-root-url?value
                         :x:/@_sha?value
 
 
@@ -575,7 +624,8 @@ p5.mysql.connect:[sulphur]
      *
      * Or if we're viewing a "batch" of files.
      */
-    if:x:/../*/p5.web.query.get/*/user?value
+    if:x:/../*/split/[0,1]/1?name
+      =:user
 
       /*
        * Making sure we display which user these files comes from.
@@ -585,9 +635,10 @@ p5.mysql.connect:[sulphur]
         style:"margin-left:auto;margin-right:auto;margin-bottom:3rem;"
         element:h1
         innerValue:{0}'s files
-          :x:/../*/p5.web.query.get/*/user?value
+          :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/username?value
 
-    else-if:x:/../*/p5.web.query.get/*/batch-id?value
+    else-if:x:/../*/split/[0,1]/1?name
+      =:batch
 
       /*
        * Making sure we display the fact that these files belongs to the same batch,
@@ -600,7 +651,8 @@ p5.mysql.connect:[sulphur]
         innerValue:Batch uploaded by {0}
           :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/username?value
 
-    else-if:x:/../*/p5.web.query.get/*/sha?value
+    else-if:x:/../*/split/[0,1]/1?name
+      =:sha
 
       /*
        * Making sure we display the the SHA value for file, as an H1 header,
@@ -616,8 +668,13 @@ p5.mysql.connect:[sulphur]
           :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/sha?value
 
       /*
-       * To create some further SEO feature, we in addition set the page's title
-       * to the file's SHA value.
+       * To create some further SEO feature, in addition to setting the page's title,
+       * we also set the title to the file's SHA1 value.
+       *
+       * Notice, these types of features might seem weird for the uninitiated, but
+       * it allows people to search for files, according to their SHA1 values, which
+       * allows them to find the same file, at different locations, if the file
+       * for some reasons is taken down from one server.
        */
       p5.web.page.set-title:{0} - {1}
         :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/name?value

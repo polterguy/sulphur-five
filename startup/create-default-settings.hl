@@ -12,4 +12,3 @@ if:x:/-/*
   insert-data
     sulphur.settings
       uploaders:users
-      viewers:users
