@@ -11,8 +11,8 @@
  *
  * The "batch-id" allows for uploading multiple files, that are somehow related.
  *
- * Will return the database ID of the uploaded file if successful, otherwise it
- * will throw an exception.
+ * Will return either "SUCCESS" or "ERROR" to caller, depending upon whether or
+ * not the file was successfully accepted or not.
  */
 
 
@@ -92,7 +92,14 @@ if:x:/@select-data/*/*/uploaders?value
         :x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/folder?value
         :x:/@p5.web.request.parse-mime/**/filename/[0,1]/*/prefix?value
         :x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
-      throw:Sorry, we have that file from before
+
+      /*
+       * Returning "ERROR" to caller.
+       *
+       * Notice, we don't return what type of error, since that could be a security
+       * concern.
+       */
+      return:ERROR
 
     /*
      * Doing the actual insertion of file.
@@ -107,14 +114,17 @@ if:x:/@select-data/*/*/uploaders?value
       @batchid:x:/@_batch-id?value
 
     /*
-     * Return database ID of newly uploaded file.
+     * Return "SUCCESS" to caller.
      */
-    return:x:/@p5.mysql.insert/*/id?value
+    return:SUCCESS
 
 else
 
   /*
-   * User is not allowed to upload file, throwing an exception with some basic
-   * information about why.
+   * User is not allowed to upload file, returning "ERROR" to caller.
+   *
+   * Notice, we don't give any error information about what went wrong, since
+   * that would give a potential adversary meta information, he could use to
+   * extract information about the system's state.
    */
-  throw:Access denied!
+  return:ERROR

@@ -34,7 +34,7 @@ if:x:/@split/1?name
   try
 
     micro.evaluate.file:@SULPHUR/handle-files/upload-file.hl
-    p5.web.echo:SUCCESS
+    p5.web.echo:x:/-?value
 
   catch
 
