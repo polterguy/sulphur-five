@@ -1,0 +1,45 @@
+
+/*
+ * Contains the list of legal HTML elements and attributes an HTML email can contain.
+ *
+ * Notice, all elements and tags not listed in this file, will be removed before 
+ * an HTML email is displayed.
+ */
+
+// Elements.
+a
+address
+blockquote
+br
+code
+del
+div
+em
+h1
+h2
+h3
+h4
+h5
+h6
+hr
+i
+label
+li
+ol
+p
+pre
+small
+span
+strike
+strong
+ul
+
+// Content of elements.
+#text
+
+// Attributes.
+@target
+@title
+@href
+@class
+@style

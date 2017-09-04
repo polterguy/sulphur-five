@@ -177,6 +177,7 @@ if:x:/../*/split/[0,1]/1?name
  * Checking if we should only show items belonging to a specific batch upload.
  */
 _batch
+_limit
 if:x:/../*/split/[0,1]/1?name
   =:batch
 
@@ -188,6 +189,27 @@ if:x:/../*/split/[0,1]/1?name
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
       @batch:x:/../*/split/[0,1]/2?name
+
+else
+
+  /*
+   * Unless caller requests a specific batch, we never show more than 10 files
+   * at the same time.
+   *
+   * The only reason we show all files, at the same time, if a user requests a
+   * specific batch, is to allow for SEO and spiders to be able to crawl all
+   * publicly available files on a server, to more easily facilitate for "mirroring" 
+   * of files according to SHA1 value.
+   *
+   * If we hadn't done this, in theory, due to our "never ending scrolling" feature,
+   * we might have risked that all files in the same batch, beyond the first 10
+   * files, would never be visible for crawlers.
+   */
+  set:x:/@_limit?value
+    src:"limit 10 offset @offset"
+  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
+    src
+      @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
 
 
 
@@ -214,21 +236,52 @@ if:x:/../*/split/[0,1]/1?name
 
 
 /*
+ * Checking if we should only show files having a specific hash-tag.
+ */
+_tag
+if:x:/../*/split/[0,1]/1?name
+  =:tag
+
+  /*
+   * Client wants to view only files having some specific tag.
+   */
+  set:x:/@_tag?value
+    src:"and description regexp @tag"
+  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
+    src
+      @tag:@"#[[:<:]]{0}[[:>:]]"
+        :x:/../*/split/[0,1]/2?name
+
+
+
+
+
+/*
  * Connecting to database and selecting available files for user.
  */
 p5.mysql.connect:[sulphur]
-  p5.mysql.select:@"select * from files where {0} {1} {2} {3} {4} {5} order by id desc limit 10 offset @offset"
+  p5.mysql.select:@"select * from files where {0} {1} {2} {3} {4} {5} {7} order by id desc {6}"
     :x:/@_where?value
     :x:/@_filter?value
     :x:/@_more?value
     :x:/@_who?value
     :x:/@_batch?value
     :x:/@_sha?value
-    @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
+    :x:/@_limit?value
+    :x:/@_tag?value
 
   /*
    * Making sure we display "end of dataset ruler" if we are at end of dataset,
    * and it doesn't exist from before.
+   *
+   * Notice, if there are more than 10 files in our result, it means we're showing
+   * an entire "batch" atthe same time, at which point we also supply a link to
+   * the main app's root URL, to among other things, allow for spiders to more
+   * easily crawl the website.
+   *
+   * The latter implies that publishing a "popular batch of file", can significantly
+   * increase your site's PageRank, among other things, and such become an opportunity
+   * to publish other types of files more successfully.
    */
   if:x:/@p5.mysql.select/*?count.int
     <:int:10
@@ -236,6 +289,8 @@ p5.mysql.connect:[sulphur]
       fetch:x:/0/0?value
         widget-exists:sulphur-at-end-of-dataset
       not
+    or:x:/@p5.mysql.select/*?count.int
+      >:int:10
 
     /*
      * "End of dataset ruler" does not exist, and we are at the end of our dataset,
@@ -285,10 +340,8 @@ p5.mysql.connect:[sulphur]
 
     /*
      * Making sure we transform the description of file from Markdown to HTML.
-     *
-     * TODO: Validate HTML for Markdown HTML malicious tag injection!
      */
-    markdown2html:x:/@_dp/#/*/description?value
+    sulphur._internal.html.markdown2html:x:/@_dp/#/*/description?value
 
     /*
      * Nicely formatting date.
@@ -360,7 +413,7 @@ p5.mysql.connect:[sulphur]
      * Forward evaluating [add] invocations arguments, and adding a widget into
      * [create-widgets] invocation below, for creating a widget wrapping file information.
      */
-    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href|/widgets/*/h3/*/innerValue)|/+/**(/_id|/_sha|/_app-root-url)
+    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href|/widgets/*(/h1|/h3)/*/innerValue)|/+/**(/_id|/_sha|/_app-root-url)
     add:x:/..p5.mysql.connect/*/create-widgets
       src
 
@@ -433,15 +486,12 @@ p5.mysql.connect:[sulphur]
                     /*
                      * Finding description widget, transforming description to
                      * to HTML, and updating its value.
-                     *
-                     * TODO: Make sure Markdown invocation does not allow for 
-                     * malicious HTML injection.
                      */
-                    markdown2html:x:/@p5.mysql.select/*/*/description?value
+                    sulphur._internal.html.markdown2html:x:/@p5.mysql.select/*/*/description?value
                     p5.web.widgets.find-first:x:/../*/_event?value
                       class:sulphur-file-description
                     set-widget-property:x:/-/*/*?value
-                      innerValue:x:/@markdown2html?value
+                      innerValue:x:/@sulphur._internal.html.markdown2html?value
 
                     /*
                      * Finding name widget, and changing its value accordingly.
@@ -522,6 +572,7 @@ p5.mysql.connect:[sulphur]
                   class:sulphur-download-file
                   innerValue:@"<span class=""icon-download""></span>"
                   title:Download file ...
+                  rel:nofollow
                   oninit
 
                     /*
@@ -602,7 +653,7 @@ p5.mysql.connect:[sulphur]
                  */
                 div
                   class:sulphur-file-description
-                  innerValue:x:/@markdown2html?value
+                  innerValue:x:/@sulphur._internal.html.markdown2html?value
 
   /*
    * Clearing widget's old content, and re-databinding files grid.
@@ -659,11 +710,14 @@ p5.mysql.connect:[sulphur]
        * to create some search engine optimization (SEO) to allow for searching
        * for a file, at another location - In case server where file originally
        * was published is taken down for some reasons.
+       *
+       * Notice, we use an H1 element here, explicitly, and rather choose to reduce
+       * its font-size, since this is considered better SEO than using an h3 element.
        */
       create-widget
         parent:sulphur-files-grid
-        style:"margin-left:auto;margin-right:auto;margin-bottom:3rem;"
-        element:h3
+        style:"margin-left:auto;margin-right:auto;margin-bottom:2rem;font-size:1.5rem;"
+        element:h1
         innerValue:{0}
           :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/sha?value
 

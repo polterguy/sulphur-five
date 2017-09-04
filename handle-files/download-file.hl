@@ -16,6 +16,27 @@ p5.mysql.connect:[sulphur]
   p5.mysql.select:@"select * from files where sha = @sha"
     @sha:x:/../*/sha?value
 
+  /*
+   * Verifying that file actually exists.
+   */
+  if:x:/@p5.mysql.select/*
+    not
+
+    /*
+     * No such file.
+     *
+     * Notice, we could have returned a 404 here, but that would defeath the
+     * purpose, allowing for users to check if a specific server, actually has
+     * a specific file, and would in such a way arguably giv away "meta information"
+     * to an adversary.
+     *
+     * Hence, we make sure we delete the exact same code and response text, as if
+     * the file existed, and the user didn't have access to the file.
+     */
+    p5.web.response.set-status-code:403
+    p5.web.echo:Access denied!
+    return
+
 
 
 

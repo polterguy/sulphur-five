@@ -63,9 +63,9 @@ create-widgets
         radio-group
           .data-field:uploaders
           options
-            Guests can upload files:all
-            Only registered users:users
-            Only root can upload:root
+            Guests:all
+            Registered users:users
+            Only root:root
         div
           class:right
           widgets
