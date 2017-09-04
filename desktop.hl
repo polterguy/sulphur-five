@@ -30,6 +30,7 @@ container
          * and adding the count to icon, to illustrate how many available files there exists.
          */
         _sql
+        whoami
         if:x:/@whoami/*/default?value
 
           /*
