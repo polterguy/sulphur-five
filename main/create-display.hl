@@ -49,6 +49,7 @@ if:x:/@whoami/*/role?value
       :x:/@_app-root-url?value
     .ondone:"function(uid, no_files, no_errors) {{window.location.replace('{0}batch/' + uid);}}"
       :x:/@_app-root-url?value
+    .onbegin:"function() {p5.$('sulphur-upload-obscurer').el.style.display = 'block';}"
 
 else
 
@@ -60,7 +61,7 @@ else
    * file input element, which encapsulates uploading of files, in addition to
    * the button that triggers our "browse for file" dialogue.
    */
-  set:x:/../*/create-widget/**/button/=sulphur-upload-widget
+  set:x:/../*/create-widget/**(/button/=sulphur-upload-widget|/micro.widgets.obscurer)
 
 
 
@@ -90,6 +91,13 @@ create-widget
   parent:sulphur-main-container
   class:row
   widgets
+
+    /*
+     * Obscurer show when files are uploaded.
+     */
+    micro.widgets.obscurer:sulphur-upload-obscurer
+      style:"display:none;"
+      message:"Please wait while we upload your files ..."
 
     /*
      * Wraps our search textbox and button.
