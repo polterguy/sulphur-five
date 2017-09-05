@@ -5,11 +5,11 @@
  * Expects the HTTP request to be of type "multipart/form-data" and that the file
  * can be found as HTTP POST parameter "file".
  *
- * Optionally, it also expects an HTTP POST parameter called "batch-id".
- * If no "batch-id" POST parameter is given, a randomly generated GUID will
- * be automatically created, and associated with the upload, as its "batch-id".
+ * Optionally, it also expects an HTTP POST parameter called "batch".
+ * If no "batch" POST parameter is given, a value of "unknown" will
+ * be associated with the upload, as its "batch".
  *
- * The "batch-id" allows for uploading multiple files, that are somehow related.
+ * The "batch" allows for uploading multiple files, that are somehow related.
  *
  * Will return either "SUCCESS" or "ERROR" to caller, depending upon whether or
  * not the file was successfully accepted or not.
@@ -42,25 +42,25 @@ if:x:/@select-data/*/*/uploaders?value
     attachment-folder:~/documents/private/
 
   /*
-   * Retrieving "batch-id", and automatically creating a random GUID,
-   * if no "batch-id" was specified.
+   * Retrieving "batch", and automatically creating a random GUID,
+   * if no "batch" was specified.
    */
-  _batch-id
-  if:x:@"/@p5.web.request.parse-mime/*/*/text/=plain/*/Content-Disposition/@""=~name=""""batch-id"""""""
+  _batch
+  if:x:@"/@p5.web.request.parse-mime/*/*/text/=plain/*/Content-Disposition/@""=~name=""""batch"""""""
 
     /*
-     * We found a "batch-id" in HTTP POST request.
+     * We found a "batch" in HTTP POST request.
      */
-    set:x:/@_batch-id?value
-      src:x:@"/@p5.web.request.parse-mime/*/*/text/=plain/*/Content-Disposition/@""=~name=""""batch-id""""""/./*/content?value"
+    set:x:/@_batch?value
+      src:x:@"/@p5.web.request.parse-mime/*/*/text/=plain/*/Content-Disposition/@""=~name=""""batch""""""/./*/content?value"
 
   else
 
     /*
-     * There was no "batch-id" HTTP POST argument in request.
+     * There was no "batch" HTTP POST argument in request.
      */
-    set:x:/@_batch-id?value
-      p5.types.guid.new
+    set:x:/@_batch?value
+      src:unknown
 
   /*
    * Figuring out SHA value of file, to avoid inserting same file multiple times.
@@ -111,7 +111,7 @@ if:x:/@select-data/*/*/uploaders?value
       @name:x:/@p5.web.request.parse-mime/**/filename/[0,1]?value
       @description:
       @sha:x:/@p5.crypto.hash.create-sha1-file?value
-      @batchid:x:/@_batch-id?value
+      @batchid:x:/@_batch?value
 
     /*
      * Return SHA1 value of file to caller.

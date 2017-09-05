@@ -47,9 +47,9 @@ if:x:/@whoami/*/role?value
   micro.page.create-dropzone
     url:{0}upload
       :x:/@_app-root-url?value
-    .ondone:"function(uid, no_files, no_errors) {{window.location.replace('{0}batch/' + uid);}}"
+    .onfinish:@"function(uid, no_files, no_errors) {{window.location.replace('{0}batch/' + uid);}}"
       :x:/@_app-root-url?value
-    .onbegin:"function() {p5.$('sulphur-upload-obscurer').el.style.display = 'block';}"
+    .onbegin:@"function() {p5.$('sulphur-upload-obscurer').el.style.display = 'block';}"
 
 else
 
@@ -188,7 +188,7 @@ create-widget
                   style:"padding-left:35px;padding-right:35px;"
                   innerValue:@"<span class=""icon-upload""></span>"
                   title:Upload file ...
-                  onclick:@"p5.micro_page_dropzone.browse();event.stopPropagation(true);return false;"
+                  onclick:@"p5.dropzone.browse();event.stopPropagation(true);return false;"
 
                 /*
                  * Delete entire batch button.
