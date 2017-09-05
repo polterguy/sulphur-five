@@ -38,52 +38,17 @@ if:x:/@whoami/*/role?value
   or:x:/@whoami/*/default?value
     not
     and:x:/@select-data/*/*/uploaders?value
-      =:users
+      =:usersl
 
   /*
-   * User is either root, or all registered users, or possible even anonymous guests
-   * are allowed to upload files.
-   *
-   * Regardless, we include the necessary JavaScript to handle uploading of files.
-   *
-   * Before we do, we create a "batch GUID" to associate with uploads.
+   * Creating dropzone for entire page, to allow for drag and drop uploading of files.
    */
-  p5.types.guid.new
-  p5.web.get-location-url
-  p5.web.include-javascript:@"
-p5.sulphur_upload_files = function(e) {{
-  var obsc = p5.$('sulphur-upload-obscurer').el;
-  obsc.style.display = 'block';
-  var files = e.target.files, length = files.length, no = 0, has_error = 0;
-  for(var i = 0; i < files.length; i++) {{
-    var xhr = new XMLHttpRequest(), fd = new FormData();
-    xhr.open('POST', '{0}/upload', true);
-    xhr.onreadystatechange = function() {{
-      if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {{
-        if (this.responseText === 'ERROR') {{
-          has_error += 1;
-        }}
-        if (++no == length) {{
-          obsc.style.display = 'none';
-          if (has_error != 0) {{
-            alert(has_error + ' file(s) were not accepted');
-          }}
-          if (no == has_error) {{
-            window.location.replace(window.location);
-          }} else {{
-            window.location.replace('{0}batch/{1}');
-          }}
-        }}
-      }}
-    }};
-    fd.append('file', files[i]);
-    fd.append('batch-id', '{1}')
-    xhr.send(fd);
-  }}
-}};
-"
-    :x:/@_app-root-url?value
-    :x:/@p5.types.guid.new?value
+  eval-x:x:/+/*
+  micro.page.create-dropzone
+    url:{0}upload
+      :x:/@_app-root-url?value
+    .ondone:"function(uid, no_files, no_errors) {{window.location.replace('{0}batch/' + uid);}}"
+      :x:/@_app-root-url?value
 
 else
 
@@ -95,7 +60,7 @@ else
    * file input element, which encapsulates uploading of files, in addition to
    * the button that triggers our "browse for file" dialogue.
    */
-  set:x:/../*/create-widget/*/widgets/*(/micro.widgets.obscurer|/micro.widgets.dropzone|/**/button/=sulphur-upload-widget|/**/input/=sulphur-upload-file-input)
+  set:x:/../*/create-widget/**/button/=sulphur-upload-widget
 
 
 
@@ -120,25 +85,11 @@ if:x:/@whoami/*/role?value
 /*
  * Creating main display.
  */
-eval-x:x:/+/**(/_app-root-url|/micro.widgets.dropzone/*/url)
+eval-x:x:/+/**/_app-root-url
 create-widget
   parent:sulphur-main-container
   class:row
   widgets
-
-    /*
-     * Obscurer that obscures page during uploading of file(s).
-     */
-    micro.widgets.obscurer:sulphur-upload-obscurer
-      message:Please wait while we're uploading your file ...
-      style:"display:none;"
-
-    /*
-     * Dropzone that allows drag and drop uploading of files.
-     */
-    micro.widgets.dropzone:sulphur-dropzone
-      url:{0}upload
-        :x:/@_app-root-url?value
 
     /*
      * Wraps our search textbox and button.
@@ -204,34 +155,6 @@ create-widget
         div
           class:right
           widgets
-
-            /*
-             * Hidden file input element, handled through JavaScript, that allows user
-             * to upload files.
-             */
-            input:sulphur-upload-file-input
-              style:"display:none;"
-              type:file
-              multiple
-              class:sulphurAttachmentFileInput
-              onchange:"p5.sulphur_upload_files(event);"
-              .onerror
-
-                /*
-                 * Invoked when an error occurs during uploading of file.
-                 */
-                micro.windows.info:The server didn't accept your file
-                  class:micro-windows-info warning
-
-              .onupload
-
-                /*
-                 * Giving user some feedback about operation, and databinding grid again.
-                 */
-                micro.windows.info:File(s) were successfully uploaded
-                  class:micro-windows-info success
-                micro.evaluate.file:@SULPHUR/main/databind-files.hl
-
             div
               class:strip
               style:"display:inline-block;"
@@ -257,7 +180,7 @@ create-widget
                   style:"padding-left:35px;padding-right:35px;"
                   innerValue:@"<span class=""icon-upload""></span>"
                   title:Upload file ...
-                  onclick:@"document.querySelector('.sulphurAttachmentFileInput').click();return false;"
+                  onclick:@"p5.micro_page_dropzone.browse();event.stopPropagation(true);return false;"
 
                 /*
                  * Delete entire batch button.
