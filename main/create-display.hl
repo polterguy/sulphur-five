@@ -398,7 +398,7 @@ create-widget
                     p5.web.set-location:x:/-?value
 
     div
-      class:col-80 offset-10 air-top
+      class:col-100 air-top
       widgets
 
         /*
