@@ -95,7 +95,7 @@ else
    * file input element, which encapsulates uploading of files, in addition to
    * the button that triggers our "browse for file" dialogue.
    */
-  set:x:/../*/create-widget/*/widgets/*(/micro.widgets.obscurer|/**/button/=sulphur-upload-widget|/**/input/=sulphur-upload-file-input)
+  set:x:/../*/create-widget/*/widgets/*(/micro.widgets.obscurer|/micro.widgets.dropzone|/**/button/=sulphur-upload-widget|/**/input/=sulphur-upload-file-input)
 
 
 
@@ -120,7 +120,7 @@ if:x:/@whoami/*/role?value
 /*
  * Creating main display.
  */
-eval-x:x:/+/**/_app-root-url
+eval-x:x:/+/**(/_app-root-url|/micro.widgets.dropzone/*/url)
 create-widget
   parent:sulphur-main-container
   class:row
@@ -132,6 +132,13 @@ create-widget
     micro.widgets.obscurer:sulphur-upload-obscurer
       message:Please wait while we're uploading your file ...
       style:"display:none;"
+
+    /*
+     * Dropzone that allows drag and drop uploading of files.
+     */
+    micro.widgets.dropzone:sulphur-dropzone
+      url:{0}upload
+        :x:/@_app-root-url?value
 
     /*
      * Wraps our search textbox and button.
