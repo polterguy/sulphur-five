@@ -41,6 +41,13 @@ SHA1 value in other servers, and possibly find your file - If it has been shared
 share the same file, on literally thousands of different servers, yet still have a cryptographic guarantee of that it is the exact same file, and that 
 it has not been tampered with in any ways!
 
+When the system converts the specified Markdown into HTML, it will even _"whitewash"_ the resulting HTML tag result, and only display what is considered
+to be safe HTML tags. And if a user provides a hyperlink, to another website, which somehow describes the file, the system will automatically create
+a _"rel='noreferrer'"_ attribute to your links - Which does not pass in the referring website to the hyperlink's endpoint, making it impossible
+for the other side, to know who served the hyperlink.
+
+There are literally a _"gazillion"_ tiny features like the above describes, to ensure your privacy, in all regards, as you are sharing your files.
+
 ## User interface
 
 Uploading a file, is as simple as dragging and dropping it unto the surface of your browser. Alternatively, clicking a button. Sulphur supports
@@ -50,7 +57,7 @@ it will be rejected. This is done by creating a SHA1 checksum of the uploaded fi
 from before.
 
 By default, the system will only show the first 10 matches, according to your search criteria, or the global list of files you have access to. As
-you scroll to the bottom of your page though, it will automatically _"feed"_ you more files, kind of the same way twitter keeps on feeding you results,
+you scroll to the bottom of your page though, it will automatically _"feed"_ you more files, kind of the same way Twitter keeps on feeding you results,
 until there are no more results matching your criteria.
 
 ## WikiLeaks dropbox
