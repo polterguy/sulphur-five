@@ -40,4 +40,22 @@ This also happens to facilitate for extreme mirroring of files, where if a file 
 SHA1 value in other servers, and possibly find your file - If it has been shared by other instances that is. This allows you to massively distributed
 share the same file, on literally thousands of different servers, yet still have a cryptographic guarantee of that it is the exact same file, and that 
 it has not been tampered with in any ways!
- 
+
+## User interface
+
+Uploading a file, is as simple as dragging and dropping it unto the surface of your browser. Alternatively, clicking a button. Sulphur supports
+uploading as many files as you wish at the same time, and each file can be ~2GB in size. The uploading process, and downloading process, is 
+extremely secure, and will validate that the user has access to upload/download the specific file. If a file exists on the server from before,
+it will be rejected. This is done by creating a SHA1 checksum of the uploaded file, and check if another file with the same SHA1 checksum exists
+from before.
+
+By default, the system will only show the first 10 matches, according to your search criteria, or the global list of files you have access to. As
+you scroll to the bottom of your page though, it will automatically _"feed"_ you more files, kind of the same way twitter keeps on feeding you results,
+until there are no more results matching your criteria.
+
+## WikiLeaks dropbox
+
+The system can also be configured to act as a _"WikiLeaks dropbox"_, allowing for anonymous guests to upload files to your server. Although most people
+would probably not want this, some few might want such features. Potential candidates for setting up the system into such a modus operandi, might be
+media houses, magazines, news providers, etc. Combined with teaching your users to use the [Tor Browser](https://www.torproject.org/projects/torbrowser.html.en), 
+this allows you to anonymously accept files, tips and such from sources, whom you wouldn't even know yourself who are.
