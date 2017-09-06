@@ -67,7 +67,7 @@ would probably not want this, some few might want such features. Potential candi
 media houses, magazines, news providers, etc. Combined with teaching your users to use the [Tor Browser](https://www.torproject.org/projects/torbrowser.html.en), 
 this allows you to anonymously accept files, tips and such from sources, whom you wouldn't even know yourself who are.
 
-![alt screenshot of Sephia Five](media/screenshots/screenshot-2.png)
+![alt screenshot of Sephia Five](media/screenshots/screenshot-3.png)
 
 ## Getting started
 
