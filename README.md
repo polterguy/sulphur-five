@@ -66,3 +66,16 @@ The system can also be configured to act as a _"WikiLeaks dropbox"_, allowing fo
 would probably not want this, some few might want such features. Potential candidates for setting up the system into such a modus operandi, might be
 media houses, magazines, news providers, etc. Combined with teaching your users to use the [Tor Browser](https://www.torproject.org/projects/torbrowser.html.en), 
 this allows you to anonymously accept files, tips and such from sources, whom you wouldn't even know yourself who are.
+
+![alt screenshot of Sephia Five](media/screenshots/screenshot-2.png)
+
+## Getting started
+
+The easiest way of installing Sulphur Five, is by following the installation process for [Phosphorus Five](https://github.com/polterguy/phosphorusfive),
+for then to visit the _"Bazar"_, and simply choose to install Sulphur Five.
+
+## License
+
+Sephia Five is licensed under the terms of the GNU GPL version 3. See the attached LICENSE file for details.
+
+There also exists [commercial sub-licensing options](https://gaiasoul.com/license/) for those wanting to sub-license Sephia Five. You are also welcome to send me an email at thomas@gaiasoul.com - If you'd like to speak to me about commercial venues, or other issues.
