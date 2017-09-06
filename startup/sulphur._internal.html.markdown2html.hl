@@ -61,6 +61,11 @@ create-event:sulphur._internal.html.markdown2html
       src:{0} (<strong>{1}</strong>)
         :x:/@_dp/#/*/\#text?value
         :x:/@split/0?name
+
+    /*
+     * Removing any previous "rel" attributes, before we add our own.
+     */
+    set:x:/@_dp/#/*/rel
     add:x:/@_dp/#
       src
         @rel:noreferrer
