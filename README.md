@@ -74,6 +74,11 @@ this allows you to anonymously accept files, tips and such from sources, whom yo
 The easiest way of installing Sulphur Five, is by following the installation process for [Phosphorus Five](https://github.com/polterguy/phosphorusfive),
 for then to visit the _"Bazar"_, and simply choose to install Sulphur Five.
 
+I have a sample demonstration of the system installed on my own _"Home Cloud"_. Be warned though, that this is website running on an old converted
+laptop, converted into a Ubuntu web server, running out of my living room, on an average home internet connection. So it might be slow, especially
+if a lot of users are accessing it atthe same time. If you'd like to check it out, feel free to [visit my home](https://homw.gaiasoul.com). I have 
+only shared some very few files though, and I do not accept anonymous uploads.
+
 ## License
 
 Sephia Five is licensed under the terms of the GNU GPL version 3. See the attached LICENSE file for details.
