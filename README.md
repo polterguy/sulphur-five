@@ -28,6 +28,8 @@ In addition, as you upload files, you can (optionally) provide a description, an
 This allows multiple users to more easily collaborate with each other, sharing files back and forth between each other, while more easily find the files
 they're looking for. There is also a search interface, allowing you to easily search for files, according to username, name, description, or tag(s).
 
+![alt screenshot of Sephia Five](media/screenshots/screenshot-2.png)
+
 ## Security, security and security!
 
 Sulphur Five is built with security in mind from day 1. Among other things, when you upload a file, a SHA1 value is generated from
