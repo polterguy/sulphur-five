@@ -119,6 +119,12 @@ p5.mysql.connect:[sulphur]
       widgets
 
         /*
+         * File name description header
+         */
+        h3
+          innerValue:x:/@p5.mysql.select/*/*/filename?value
+
+        /*
          * Name textbox.
          */
         input:sulphur-file-name-textbox
