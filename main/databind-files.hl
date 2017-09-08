@@ -534,36 +534,14 @@ p5.mysql.connect:[sulphur]
                   class:sulphur-meta
                   widgets:databound
                     span
-                      innerValue:"Owner; "
-                    a
-                      class:sulphur-meta-owner
-                      innerValue:"{0} ({1})"
-                        :x:/@_dp/#/*/username?value
-                        :x:/@_dp/#/*/type?value
-                      href:"{0}user/{1}"
-                        :x:/@_app-root-url?value
-                        :x:/@_dp/#/*/username?value
-                    span
-                      innerValue:" - "
-                    a
-                      class:sulphur-meta-batch
-                      innerValue:batch
-                      href:"{0}batch/{1}"
-                        :x:/@_app-root-url?value
-                        :x:/@_dp/#/*/batchid?value
-                    br
-                    a
-                      class:sulphur-meta-sha
-                      innerValue:Sha1 {0}
-                        :x:/@_dp/#/*/sha?value
-                      href:"{0}sha/{1}"
-                        :x:/@_app-root-url?value
-                        :x:/@_dp/#/*/sha?value
-                    span
-                      innerValue:"<br/>Filename; '{2}' - Uploaded; {1} - {0:n0}KB"
+                      innerValue:@"Filename; '{2}' - Uploaded; {1} - {0:n0}KB - Owner <a href=""{5}user/{3}"">{3}</a> ({4}) - <a href=""{5}batch/{6}"">batch</a>"
                         :x:/@_length?value
                         :x:/@p5.types.date.format?value
                         :x:/@_dp/#/*/filename?value
+                        :x:/@_dp/#/*/username?value
+                        :x:/@_dp/#/*/type?value
+                        :x:/@_app-root-url?value
+                        :x:/@_dp/#/*/batchid?value
 
                 /*
                  * Download file hyperlink.
