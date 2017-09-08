@@ -21,6 +21,7 @@ small
 span
 strong
 ul
+img
 
 // Content of elements.
 #text
@@ -31,3 +32,6 @@ ul
 @href
 @class
 @rel
+@src
+@alt
+@style

@@ -31,6 +31,15 @@ create-event:sulphur._internal.html.markdown2html
         @target:_blank
 
   /*
+   * Running through each img tag, and making sure it gets some default sane
+   * styling, unless it already has a style tag.
+   */
+  for-each:x:/@html2lambda/**/img(!/*/style/.)
+    add:x:/@_dp/#
+      src
+        @style:"float:left;border-radius:5px;box-shadow:3px 3px 5px rgba(0,0,0,.2);margin-right:15px;"
+
+  /*
    * Running through each hyperlink, and making sure every hyperlink displays its
    * actual domain as a part of its anchor text, in addition to a rel="noreferrer" 
    * attribute.
