@@ -126,18 +126,32 @@ create-widget
               onclick
 
                 /*
-                 * Performing search.
+                 * Performing search, by retrieving search textbox' value, and
+                 * redirecting client to a URL containing a GET parameter with 
+                 * search text as query string.
                  */
+                _app-root-url:x:/@_app-root-url?value
                 get-widget-property:sulphur-search
                   value
-                eval-x:x:/+/*
-                micro.evaluate.file:@SULPHUR/main/databind-files.hl
-                  filter:x:/@get-widget-property/*/*?value
 
                 /*
-                 * Setting focus to search textbox again.
+                 * Checking if search query was empty, at which point we redirect
+                 * to main root URL of app.
                  */
-                micro.page.set-focus:sulphur-search
+                if:x:/@get-widget-property/*/*?value
+                  =:
+
+                  /*
+                   * Query is empty, simply reloading app's root URL, and 
+                   * returning early.
+                   */
+                  p5.web.set-location:x:/@_app-root-url?value
+                  return
+
+                p5.html.url-encode:x:/@get-widget-property/*/*?value
+                p5.web.set-location:{0}?q={1}
+                  :x:/@_app-root-url?value
+                  :x:/@p5.html.url-encode?value
 
             /*
              * Clear search button.
@@ -436,24 +450,33 @@ window.onscroll = function() {
 
 
 /*
- * Initial databinding of files.
+ * Checking if we have a query/search parameter first.
  */
-micro.evaluate.file:@SULPHUR/main/databind-files.hl
+p5.web.query.get:q
+if:x:/@p5.web.query.get/*?value
+
+  /*
+   * Invocation contains a query/search HTTP GET parameter, first making sure
+   * our databind invocation is given our query parameter.
+   */
+  eval-x:x:/+/*/*
+  add:x:/../*/micro.evaluate.file
+    src
+      filter:x:/@p5.web.query.get/*?value
+
+  /*
+   * Then making sure we display our query parameter in our search textbox, and
+   * that we give our textbox initial focus.
+   */
+  set-widget-property:sulphur-search
+    value:x:/@p5.web.query.get/*?value
+  micro.page.set-focus:sulphur-search
 
 
 
 
 
 /*
- * Checking to see if there is a "edit" argument, and if so, making sure we
- * display that file in a "modal edit container".
+ * Databinding files.
  */
-p5.web.query.get:edit
-if:x:/@p5.web.query.get/*?value
-
-  /*
-   * Evaluating file responsible for editing file.
-   */
-  eval-x:x:/+/*
-  micro.evaluate.file:@SULPHUR/handle-files/edit-file.hl
-    id:x:/@p5.web.query.get/*?value
+micro.evaluate.file:@SULPHUR/main/databind-files.hl
