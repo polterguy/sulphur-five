@@ -113,16 +113,10 @@ p5.mysql.connect:[sulphur]
   /*
    * Displaying widget to user.
    */
-  eval-x:x:/+/**/_id|/+/*/*/*/*(/value|/innerValue)
+  eval-x:x:/+/**/_id
   create-widgets
     micro.widgets.modal:sulphur-file-editor-wrapper
       widgets
-
-        /*
-         * File name description header
-         */
-        h3
-          innerValue:x:/@p5.mysql.select/*/*/filename?value
 
         /*
          * Name textbox.
@@ -163,7 +157,6 @@ p5.mysql.connect:[sulphur]
           innerValue:x:/@p5.mysql.select/*/*/description?value
           rows:7
           title:Description for file, feel free to use Markdown here
-          style:"margin-bottom:3rem;"
           onchange
 
             /*
@@ -181,7 +174,6 @@ p5.mysql.connect:[sulphur]
          * Protection for file wrapper widget.
          */
         div
-          style:"margin-bottom:2rem;margin-top:-2rem;"
           oninit
 
             /*
@@ -295,8 +287,6 @@ p5.mysql.connect:[sulphur]
                 dest:x:/@_dest?value
 
           widgets
-            p
-              innerValue:@"Public means accessible to anyone, protected means only accessible for registered users, and private means only accessible for the file's owner."
             input:sulphur-rdo-private
               type:radio
               name:sulphur-rdo-protection
@@ -343,104 +333,112 @@ p5.mysql.connect:[sulphur]
               innerValue:Public
 
         /*
-         * Close button.
+         * Wrapped for action buttons.
          */
-        a:sulphur-close-file-editor
-          href:#
-          role:button
-          class:sulphur-close-file-editor
-          innerValue:@"<span class=""icon-close""></span>"
-          title:Close editor ...
-          onclick
-
-            /*
-             * Re-databinding the edited file's widget, and deleting edit widget.
-             */
-            _id:x:/@p5.mysql.select/*/*/id?value
-            sulphur.files.update:x:/@_id?value
-            delete-widget:sulphur-file-editor-wrapper
-
-        /*
-         * Delete file button.
-         */
-        a
-          href:#
-          class:sulphur-delete-file-editor
-          innerValue:@"<span class=""icon-trash""></span>"
-          title:Delete file ...
-          onclick
-
-            /*
-             * Deleting file and redirecting to main app's root URL.
-             */
-            _id:x:/@p5.mysql.select/*/*/id?value
-            p5.mysql.connect:[sulphur]
-              p5.mysql.transaction.begin
-                p5.mysql.select:@"select username, prefix, filename, type from files where id = @id"
-                  @id:x:/@_id?value
-                p5.mysql.delete:@"delete from files where id = @id"
-                  @id:x:/@_id?value
+        div
+          class:right
+          widgets
+            div
+              class:strip
+              style:"display:inline-block;"
+              widgets
 
                 /*
-                 * Figuring out file's folder.
+                 * Delete file button.
                  */
-                _folder
-                if:x:/@p5.mysql.select/*/*/username?value
-                  =:guest
-                  and:x:/@p5.mysql.select/*/*/type?value
-                    =:private
+                button
+                  innerValue:@"<span class=""icon-trash""></span>"
+                  style:"margin-bottom:0;"
+                  title:Delete file ...
+                  onclick
 
-                  /*
-                   * Privately owned guest file.
-                   */
-                  set:x:/@_folder?value
-                    src:/common/documents/private/
+                    /*
+                     * Deleting file and redirecting to main app's root URL.
+                     */
+                    _id:x:/@p5.mysql.select/*/*/id?value
+                    p5.mysql.connect:[sulphur]
+                      p5.mysql.transaction.begin
+                        p5.mysql.select:@"select username, prefix, filename, type from files where id = @id"
+                          @id:x:/@_id?value
+                        p5.mysql.delete:@"delete from files where id = @id"
+                          @id:x:/@_id?value
 
-                else-if:x:/@p5.mysql.select/*/*/type?value
-                  =:private
+                        /*
+                         * Figuring out file's folder.
+                         */
+                        _folder
+                        if:x:/@p5.mysql.select/*/*/username?value
+                          =:guest
+                          and:x:/@p5.mysql.select/*/*/type?value
+                            =:private
 
-                  /*
-                   * Privately owned user file.
-                   */
-                  set:x:/@_folder?value
-                    src:/users/{0}/documents/private/
-                      :x:/@p5.mysql.select/*/*/username?value
+                          /*
+                           * Privately owned guest file.
+                           */
+                          set:x:/@_folder?value
+                            src:/common/documents/private/
 
-                else-if:x:/@p5.mysql.select/*/*/type?value
-                  =:protected
+                        else-if:x:/@p5.mysql.select/*/*/type?value
+                          =:private
 
-                  /*
-                   * Protected user file.
-                   */
-                  set:x:/@_folder?value
-                    src:/common/documents/private/
+                          /*
+                           * Privately owned user file.
+                           */
+                          set:x:/@_folder?value
+                            src:/users/{0}/documents/private/
+                              :x:/@p5.mysql.select/*/*/username?value
 
-                else-if:x:/@p5.mysql.select/*/*/type?value
-                  =:public
+                        else-if:x:/@p5.mysql.select/*/*/type?value
+                          =:protected
 
-                  /*
-                   * Public user file.
-                   */
-                  set:x:/@_folder?value
-                    src:/common/documents/public/
+                          /*
+                           * Protected user file.
+                           */
+                          set:x:/@_folder?value
+                            src:/common/documents/private/
 
-                delete-file:{0}{1}{2}
-                  :x:/@_folder?value
-                  :x:/@p5.mysql.select/*/*/prefix?value
-                  :x:/@p5.mysql.select/*/*/filename?value
+                        else-if:x:/@p5.mysql.select/*/*/type?value
+                          =:public
+
+                          /*
+                           * Public user file.
+                           */
+                          set:x:/@_folder?value
+                            src:/common/documents/public/
+
+                        delete-file:{0}{1}{2}
+                          :x:/@_folder?value
+                          :x:/@p5.mysql.select/*/*/prefix?value
+                          :x:/@p5.mysql.select/*/*/filename?value
+
+                        /*
+                         * Committing transaction.
+                         */
+                        p5.mysql.transaction.commit
+
+                        /*
+                         * Deleting main file editor.
+                         */
+                        delete-widget:sulphur-file-editor-wrapper
+
+                        /*
+                         * Making sure we delete the widget wrapping the current file
+                         * from our "grid".
+                         */
+                        sulphur.files.delete:x:/@_id?value
 
                 /*
-                 * Committing transaction.
+                 * Close button.
                  */
-                p5.mysql.transaction.commit
+                button
+                  innerValue:Close
+                  style:"margin-bottom:0;"
+                  title:Close editor ...
+                  onclick
 
-                /*
-                 * Deleting main file editor.
-                 */
-                delete-widget:sulphur-file-editor-wrapper
-
-                /*
-                 * Making sure we delete the widget wrapping the current file
-                 * from our "grid".
-                 */
-                sulphur.files.delete:x:/@_id?value
+                    /*
+                     * Re-databinding the edited file's widget, and deleting edit widget.
+                     */
+                    _id:x:/@p5.mysql.select/*/*/id?value
+                    sulphur.files.update:x:/@_id?value
+                    delete-widget:sulphur-file-editor-wrapper

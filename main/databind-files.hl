@@ -399,21 +399,10 @@ p5.mysql.connect:[sulphur]
         _:decimal:1024
 
     /*
-     * Notice, we don't display the date, unless user is actually logged in, but
-     * mask it, to avoid giving away meta information about where the file might have
-     * originally surfaced initially.
-     *
-     * Hence, the date property of the file is actually "protected information".
-     */
-    if:x:/@whoami/*/default?value
-      set:x:/@p5.types.date.format?value
-        src:"XXX"
-
-    /*
      * Forward evaluating [add] invocations arguments, and adding a widget into
      * [create-widgets] invocation below, for creating a widget wrapping file information.
      */
-    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href|/widgets/*(/h1|/h3)/*/innerValue)|/+/**(/_id|/_sha|/_app-root-url)
+    eval-x:x:/+/**/widgets/=databound/*/*(/innerValue|/href|/widgets/*(/h1|/h4)/*/innerValue)|/+/**(/_id|/_sha|/_app-root-url)
     add:x:/..p5.mysql.connect/*/create-widgets
       src
 
@@ -523,108 +512,94 @@ p5.mysql.connect:[sulphur]
                     :x:/@_app-root-url?value
                     :x:/@_dp/#/*/sha?value
                   widgets
-                    h3
+                    h4
                       class:sulphur-file-name
                       innerValue:x:/@_dp/#/*/name?value
 
                 /*
-                 * Meta information username, protection, etc.
+                 * Wrapper for "action buttons", which includes download and edit buttons.
                  */
                 div
-                  class:sulphur-meta
-                  widgets:databound
-                    span
-                      innerValue:@"Filename; '{2}' - Uploaded; {1} - {0:n0}KB - Owner <a href=""{5}user/{3}"">{3}</a> ({4}) - <a href=""{5}batch/{6}"">batch</a>"
-                        :x:/@_length?value
-                        :x:/@p5.types.date.format?value
-                        :x:/@_dp/#/*/filename?value
-                        :x:/@_dp/#/*/username?value
-                        :x:/@_dp/#/*/type?value
-                        :x:/@_app-root-url?value
-                        :x:/@_dp/#/*/batchid?value
-
-                /*
-                 * Download file hyperlink.
-                 */
-                a
-                  class:sulphur-download-file
-                  innerValue:@"<span class=""icon-download""></span>"
-                  title:Download file ...
-                  rel:nofollow
-                  oninit
+                  class:sulphur-file-action-buttons
+                  widgets
 
                     /*
-                     * Changing [href] of widget to allow downloading of file.
+                     * Edit file widget, only visible if user is root, or file belongs
+                     * to currently logged in user.
                      */
-                    _sha:x:/@_dp/#/*/sha?value
-                    _app-root-url:x:/@_app-root-url?value
-                    set-widget-property:x:/../*/_event?value
-                      href:{0}download/{1}
-                        :x:/@_app-root-url?value
-                        :x:/@_sha?value
+                    button
+                      innerValue:@"<span class=""icon-pencil""></span>"
+                      title:Edit file ...
+                      oninit
 
+                        /*
+                         * Forward evaluated above.
+                         */
+                        _id:x:/@_dp/#/*/id?value
 
-                /*
-                 * Edit file widget, only visible if user is root, or file belongs
-                 * to currently logged in user.
-                 */
-                a
-                  href:#
-                  role:button
-                  class:sulphur-edit-file
-                  innerValue:@"<span class=""icon-pencil""></span>"
-                  title:Edit file ...
-                  oninit
-
-                    /*
-                     * Forward evaluated above.
-                     */
-                    _id:x:/@_dp/#/*/id?value
-
-                    /*
-                     * Verifying user is allowed to editing file, and if not,
-                     * simply removing widget.
-                     */
-                    whoami
-                    if:x:/@whoami/*/default?value
-                      =:guest
-
-                      /*
-                       * Guests are never allowed to edit files.
-                       */
-                      delete-widget:x:/../*/_event?value
-                      return
-
-                    if:x:/@whoami/*/role?value
-                      !=:root
-
-                      /*
-                       * User is not root, therefor we must check if user is the
-                       * owner of the file, and if not, we don't allow him to edit
-                       * the file.
-                       */
-                      p5.mysql.connect:[sulphur]
-                        p5.mysql.scalar:@"select username from files where id = @id"
-                          @id:x:/@_id?value
-                        if:x:/@p5.mysql.scalar?value
-                          !=:x:/@whoami/*/username?value
+                        /*
+                         * Verifying user is allowed to editing file, and if not,
+                         * simply removing widget.
+                         */
+                        whoami
+                        if:x:/@whoami/*/default?value
+                          =:guest
 
                           /*
-                           * User does not own file, deleting widget, and returning
-                           * early.
+                           * Guests are never allowed to edit files.
                            */
                           delete-widget:x:/../*/_event?value
                           return
 
-                  onclick
+                        if:x:/@whoami/*/role?value
+                          !=:root
+
+                          /*
+                           * User is not root, therefor we must check if user is the
+                           * owner of the file, and if not, we don't allow him to edit
+                           * the file.
+                           */
+                          p5.mysql.connect:[sulphur]
+                            p5.mysql.scalar:@"select username from files where id = @id"
+                              @id:x:/@_id?value
+                            if:x:/@p5.mysql.scalar?value
+                              !=:x:/@whoami/*/username?value
+
+                              /*
+                               * User does not own file, deleting widget, and returning
+                               * early.
+                               */
+                              delete-widget:x:/../*/_event?value
+                              return
+
+                      onclick
+
+                        /*
+                         * Invoking file responsible for allowing user to edit file.
+                         */
+                        _id:x:/@_dp/#/*/id?value
+                        eval-x:x:/+/*
+                        micro.evaluate.file:@SULPHUR/handle-files/edit-file.hl
+                          id:x:/@_id?value
 
                     /*
-                     * Invoking file responsible for allowing user to edit file.
+                     * Download file hyperlink.
                      */
-                    _id:x:/@_dp/#/*/id?value
-                    eval-x:x:/+/*
-                    micro.evaluate.file:@SULPHUR/handle-files/edit-file.hl
-                      id:x:/@_id?value
+                    a
+                      innerValue:@"<span class=""icon-download""></span>"
+                      title:Download file ...
+                      rel:nofollow
+                      oninit
+
+                        /*
+                         * Changing [href] of widget to allow downloading of file.
+                         */
+                        _sha:x:/@_dp/#/*/sha?value
+                        _app-root-url:x:/@_app-root-url?value
+                        set-widget-property:x:/../*/_event?value
+                          href:{0}download/{1}
+                            :x:/@_app-root-url?value
+                            :x:/@_sha?value
 
                 /*
                  * Description for file.
@@ -632,6 +607,22 @@ p5.mysql.connect:[sulphur]
                 div
                   class:sulphur-file-description
                   innerValue:x:/@sulphur._internal.html.markdown2html?value
+
+                /*
+                 * Meta information username, date, protection, file size, etc.
+                 */
+                div
+                  class:sulphur-meta
+                  widgets:databound
+                    span
+                      innerValue:@"{2} - {1} - {0:n0}KB - <a href=""{5}user/{3}"">{3}</a> ({4}) - <a href=""{5}batch/{6}"">batch</a>"
+                        :x:/@_length?value
+                        :x:/@p5.types.date.format?value
+                        :x:/@_dp/#/*/filename?value
+                        :x:/@_dp/#/*/username?value
+                        :x:/@_dp/#/*/type?value
+                        :x:/@_app-root-url?value
+                        :x:/@_dp/#/*/batchid?value
 
   /*
    * Clearing widget's old content, and re-databinding files grid.
@@ -661,9 +652,22 @@ p5.mysql.connect:[sulphur]
        */
       create-widget
         parent:sulphur-files-grid
-        style:"margin-left:auto;margin-right:auto;margin-bottom:3rem;"
+        style:"margin-left:auto;margin-right:auto;font-size:1.1rem;"
         element:h1
         innerValue:{0}'s files
+          :x:/../*/split/[0,1]/2?name
+
+    else-if:x:/../*/split/[0,1]/1?name
+      =:tag
+
+      /*
+       * Making sure we display which user these files comes from.
+       */
+      create-widget
+        parent:sulphur-files-grid
+        style:"margin-left:auto;margin-right:auto;font-size:1.1rem;"
+        element:h1
+        innerValue:#{0}
           :x:/../*/split/[0,1]/2?name
 
     else-if:x:/../*/split/[0,1]/1?name
@@ -675,9 +679,9 @@ p5.mysql.connect:[sulphur]
        */
       create-widget
         parent:sulphur-files-grid
-        style:"margin-left:auto;margin-right:auto;margin-bottom:3rem;"
+        style:"margin-left:auto;margin-right:auto;font-size:1.1rem;"
         element:h1
-        innerValue:Batch uploaded by {0}
+        innerValue:Batch by {0}
           :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/username?value
 
     else-if:x:/../*/split/[0,1]/1?name
@@ -694,7 +698,7 @@ p5.mysql.connect:[sulphur]
        */
       create-widget
         parent:sulphur-files-grid
-        style:"margin-left:auto;margin-right:auto;margin-bottom:2rem;font-size:1.5rem;"
+        style:"margin-left:auto;margin-right:auto;font-size:1.1rem;"
         element:h1
         innerValue:{0}
           :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/sha?value
