@@ -113,332 +113,328 @@ p5.mysql.connect:[sulphur]
   /*
    * Displaying widget to user.
    */
-  eval-x:x:/+/**/_id
-  create-widget:sulphur-file-editor-wrapper
-    class:sulphur-file-editor
-    widgets
-      container
-        class:sulphur-file-item sulphur-file-item-edit rounded shaded air-inner
-        widgets
+  eval-x:x:/+/**/_id|/+/*/*/*/*(/value|/innerValue)
+  create-widgets
+    micro.widgets.modal:sulphur-file-editor-wrapper
+      widgets
 
-          /*
-           * Name textbox.
-           */
-          input:sulphur-file-name-textbox
-            type:text
-            class:fill
-            value:x:/@p5.mysql.select/*/*/name?value
-            placeholder:Name of file ...
-            title:Name for file
-            onkeydown:@"if (event.keyCode == 13) {p5.$('sulphur-file-name-textbox').raise('onchange');p5.$('sulphur-close-file-editor').raise('onclick');return false;}"
-            oninit
+        /*
+         * Name textbox.
+         */
+        input:sulphur-file-name-textbox
+          type:text
+          class:fill
+          value:x:/@p5.mysql.select/*/*/name?value
+          placeholder:Name of file ...
+          title:Name for file
+          onkeydown:@"if (event.keyCode == 13) {p5.$('sulphur-file-name-textbox').raise('onchange');p5.$('sulphur-close-file-editor').raise('onclick');return false;}"
+          oninit
+
+            /*
+             * Setting initial focus to "name" textbox.
+             */
+            micro.page.set-focus:x:/../*/_event?value
+
+          onchange
+
+            /*
+             * Updates file's name in database.
+             */
+            _id:x:/@p5.mysql.select/*/*/id?value
+            get-widget-property:x:/../*/_event?value
+              value
+            p5.mysql.connect:[sulphur]
+              p5.mysql.update:@"update files set name = @name where id = @id"
+                @name:x:/@get-widget-property/*/*?value
+                @id:x:/@_id?value
+
+        /*
+         * Description textarea widget.
+         */
+        textarea
+          placeholder:Description of file ...
+          class:fill
+          innerValue:x:/@p5.mysql.select/*/*/description?value
+          rows:7
+          title:Description for file, feel free to use Markdown here
+          style:"margin-bottom:3rem;"
+          onchange
+
+            /*
+             * Updates file's description in database.
+             */
+            _id:x:/@p5.mysql.select/*/*/id?value
+            get-widget-property:x:/../*/_event?value
+              value
+            p5.mysql.connect:[sulphur]
+              p5.mysql.update:@"update files set description = @description where id = @id"
+                @description:x:/@get-widget-property/*/*?value
+                @id:x:/@_id?value
+
+        /*
+         * Protection for file wrapper widget.
+         */
+        div
+          style:"margin-bottom:2rem;margin-top:-2rem;"
+          oninit
+
+            /*
+             * Checking file's protection, and setting radio buttons
+             * initial values accordingly.
+             *
+             * Notice, in case guest uploads are enabled, and user is a guest,
+             * we entirely delete this widget.
+             *
+             * This allows for an "anonymous WikiLeaks type of DropBox".
+             */
+            whoami
+            if:x:/-/*/default?value
 
               /*
-               * Setting initial focus to "name" textbox.
+               * User is guest, deleting widget and returning early.
                */
-              micro.page.set-focus:x:/../*/_event?value
+              delete-widget:x:/../*/_event?value
+              return
 
-            onchange
+            _id:x:/@p5.mysql.select/*/*/id?value
+            p5.mysql.connect:[sulphur]
+              p5.mysql.scalar:@"select type from files where id = @id"
+                @id:x:/@_id?value
+              switch:x:/@p5.mysql.scalar?value
+                case:private
+                  set-widget-property:sulphur-rdo-private
+                    checked
+                case:protected
+                  set-widget-property:sulphur-rdo-protected
+                    checked
+                case:public
+                  set-widget-property:sulphur-rdo-public
+                    checked
+
+          events
+
+            /*
+             * Changes file's accessibility.
+             *
+             * Expected [protection] being either "private", "protected" or "public".
+             */
+            sulphur.edit-file.set-protection
 
               /*
-               * Updates file's name in database.
+               * Sanity check.
+               */
+              micro.lambda.contract.min:x:/..
+                protection:string
+
+              /*
+               * updating file's protection in database.
                */
               _id:x:/@p5.mysql.select/*/*/id?value
-              get-widget-property:x:/../*/_event?value
-                value
               p5.mysql.connect:[sulphur]
-                p5.mysql.update:@"update files set name = @name where id = @id"
-                  @name:x:/@get-widget-property/*/*?value
+                p5.mysql.select:@"select * from files where id = @id"
+                  @id:x:/@_id?value
+                p5.mysql.update:@"update files set type = @protection where id = @id"
+                  @protection:x:/../*/protection?value
                   @id:x:/@_id?value
 
-          /*
-           * Description textarea widget.
-           */
-          textarea
-            placeholder:Description of file ...
-            class:fill
-            innerValue:x:/@p5.mysql.select/*/*/description?value
-            rows:7
-            title:Description for file, feel free to use Markdown here
-            style:"margin-bottom:3rem;"
-            onchange
+              /*
+               * Physically moving file on disc.
+               *
+               * Notice, we need to figure out where the file previously physically
+               * was on disc, which depends upon file's previous protection level.
+               * For then to figure out file's new location, which depends upon
+               * its new protection level.
+               */
+              _src
+              _dest
+              switch:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/type?value
+                case:private
+                  set:x:/@_src?value
+                    src:~/documents/private/{0}{1}
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
+                case:protected
+                  set:x:/@_src?value
+                    src:/common/documents/private/{0}{1}
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
+                case:public
+                  set:x:/@_src?value
+                    src:/common/documents/public/{0}{1}
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
+              switch:x:/../*/protection?value
+                case:private
+                  set:x:/@_dest?value
+                    src:~/documents/private/{0}{1}
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
+                case:protected
+                  set:x:/@_dest?value
+                    src:/common/documents/private/{0}{1}
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
+                case:public
+                  set:x:/@_dest?value
+                    src:/common/documents/public/{0}{1}
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
+                      :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
 
               /*
-               * Updates file's description in database.
+               * Now we know file's previous location, in addition to its
+               * new location, and can move onwards with physically moving 
+               * the file on disc.
                */
-              _id:x:/@p5.mysql.select/*/*/id?value
-              get-widget-property:x:/../*/_event?value
-                value
-              p5.mysql.connect:[sulphur]
-                p5.mysql.update:@"update files set description = @description where id = @id"
-                  @description:x:/@get-widget-property/*/*?value
+              move-file:x:/@_src?value
+                dest:x:/@_dest?value
+
+          widgets
+            p
+              innerValue:@"Public means accessible to anyone, protected means only accessible for registered users, and private means only accessible for the file's owner."
+            input:sulphur-rdo-private
+              type:radio
+              name:sulphur-rdo-protection
+              onchange
+
+                /*
+                 * Doing database update.
+                 */
+                sulphur.edit-file.set-protection
+                  protection:private
+
+            label
+              for:sulphur-rdo-private
+              innerValue:Private
+
+            input:sulphur-rdo-protected
+              type:radio
+              name:sulphur-rdo-protection
+              onchange
+
+                /*
+                 * Doing database update.
+                 */
+                sulphur.edit-file.set-protection
+                  protection:protected
+
+            label
+              for:sulphur-rdo-protected
+              innerValue:Protected
+
+            input:sulphur-rdo-public
+              type:radio
+              name:sulphur-rdo-protection
+              onchange
+
+                /*
+                 * Doing database update.
+                 */
+                sulphur.edit-file.set-protection
+                  protection:public
+
+            label
+              for:sulphur-rdo-public
+              innerValue:Public
+
+        /*
+         * Close button.
+         */
+        a:sulphur-close-file-editor
+          href:#
+          role:button
+          class:sulphur-close-file-editor
+          innerValue:@"<span class=""icon-close""></span>"
+          title:Close editor ...
+          onclick
+
+            /*
+             * Re-databinding the edited file's widget, and deleting edit widget.
+             */
+            _id:x:/@p5.mysql.select/*/*/id?value
+            sulphur.files.update:x:/@_id?value
+            delete-widget:sulphur-file-editor-wrapper
+
+        /*
+         * Delete file button.
+         */
+        a
+          href:#
+          class:sulphur-delete-file-editor
+          innerValue:@"<span class=""icon-trash""></span>"
+          title:Delete file ...
+          onclick
+
+            /*
+             * Deleting file and redirecting to main app's root URL.
+             */
+            _id:x:/@p5.mysql.select/*/*/id?value
+            p5.mysql.connect:[sulphur]
+              p5.mysql.transaction.begin
+                p5.mysql.select:@"select username, prefix, filename, type from files where id = @id"
+                  @id:x:/@_id?value
+                p5.mysql.delete:@"delete from files where id = @id"
                   @id:x:/@_id?value
 
-
-          /*
-           * Protection for file wrapper widget.
-           */
-          div
-            style:"margin-bottom:2rem;margin-top:-2rem;"
-            oninit
-
-              /*
-               * Checking file's protection, and setting radio buttons
-               * initial values accordingly.
-               *
-               * Notice, in case guest uploads are enabled, and user is a guest,
-               * we entirely delete this widget.
-               *
-               * This allows for an "anonymous WikiLeaks type of DropBox".
-               */
-              whoami
-              if:x:/-/*/default?value
-
                 /*
-                 * User is guest, deleting widget and returning early.
+                 * Figuring out file's folder.
                  */
-                delete-widget:x:/../*/_event?value
-                return
-
-              _id:x:/@p5.mysql.select/*/*/id?value
-              p5.mysql.connect:[sulphur]
-                p5.mysql.scalar:@"select type from files where id = @id"
-                  @id:x:/@_id?value
-                switch:x:/@p5.mysql.scalar?value
-                  case:private
-                    set-widget-property:sulphur-rdo-private
-                      checked
-                  case:protected
-                    set-widget-property:sulphur-rdo-protected
-                      checked
-                  case:public
-                    set-widget-property:sulphur-rdo-public
-                      checked
-
-            events
-
-              /*
-               * Changes file's accessibility.
-               *
-               * Expected [protection] being either "private", "protected" or "public".
-               */
-              sulphur.edit-file.set-protection
-
-                /*
-                 * Sanity check.
-                 */
-                micro.lambda.contract.min:x:/..
-                  protection:string
-
-                /*
-                 * updating file's protection in database.
-                 */
-                _id:x:/@p5.mysql.select/*/*/id?value
-                p5.mysql.connect:[sulphur]
-                  p5.mysql.select:@"select * from files where id = @id"
-                    @id:x:/@_id?value
-                  p5.mysql.update:@"update files set type = @protection where id = @id"
-                    @protection:x:/../*/protection?value
-                    @id:x:/@_id?value
-
-                /*
-                 * Physically moving file on disc.
-                 *
-                 * Notice, we need to figure out where the file previously physically
-                 * was on disc, which depends upon file's previous protection level.
-                 * For then to figure out file's new location, which depends upon
-                 * its new protection level.
-                 */
-                _src
-                _dest
-                switch:x:/@p5.mysql.connect/*/p5.mysql.select/*/*/type?value
-                  case:private
-                    set:x:/@_src?value
-                      src:~/documents/private/{0}{1}
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
-                  case:protected
-                    set:x:/@_src?value
-                      src:/common/documents/private/{0}{1}
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
-                  case:public
-                    set:x:/@_src?value
-                      src:/common/documents/public/{0}{1}
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
-                switch:x:/../*/protection?value
-                  case:private
-                    set:x:/@_dest?value
-                      src:~/documents/private/{0}{1}
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
-                  case:protected
-                    set:x:/@_dest?value
-                      src:/common/documents/private/{0}{1}
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
-                  case:public
-                    set:x:/@_dest?value
-                      src:/common/documents/public/{0}{1}
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/prefix?value
-                        :x:/@p5.mysql.connect/*/p5.mysql.select/*/*/filename?value
-
-                /*
-                 * Now we know file's previous location, in addition to its
-                 * new location, and can move onwards with physically moving 
-                 * the file on disc.
-                 */
-                move-file:x:/@_src?value
-                  dest:x:/@_dest?value
-
-            widgets
-              p
-                innerValue:@"Public means accessible to anyone, protected means only accessible for registered users, and private means only accessible for the file's owner."
-              input:sulphur-rdo-private
-                type:radio
-                name:sulphur-rdo-protection
-                onchange
-
-                  /*
-                   * Doing database update.
-                   */
-                  sulphur.edit-file.set-protection
-                    protection:private
-
-              label
-                for:sulphur-rdo-private
-                innerValue:Private
-
-              input:sulphur-rdo-protected
-                type:radio
-                name:sulphur-rdo-protection
-                onchange
-
-                  /*
-                   * Doing database update.
-                   */
-                  sulphur.edit-file.set-protection
-                    protection:protected
-
-              label
-                for:sulphur-rdo-protected
-                innerValue:Protected
-
-              input:sulphur-rdo-public
-                type:radio
-                name:sulphur-rdo-protection
-                onchange
-
-                  /*
-                   * Doing database update.
-                   */
-                  sulphur.edit-file.set-protection
-                    protection:public
-
-              label
-                for:sulphur-rdo-public
-                innerValue:Public
-
-          /*
-           * Close button.
-           */
-          a:sulphur-close-file-editor
-            href:#
-            role:button
-            class:sulphur-close-file-editor
-            innerValue:@"<span class=""icon-close""></span>"
-            title:Close editor ...
-            onclick
-
-              /*
-               * Re-databinding the edited file's widget, and deleting edit widget.
-               */
-              _id:x:/@p5.mysql.select/*/*/id?value
-              sulphur.files.update:x:/@_id?value
-              delete-widget:sulphur-file-editor-wrapper
-
-          /*
-           * Delete file button.
-           */
-          a
-            href:#
-            class:sulphur-delete-file-editor
-            innerValue:@"<span class=""icon-trash""></span>"
-            title:Delete file ...
-            onclick
-
-              /*
-               * Deleting file and redirecting to main app's root URL.
-               */
-              _id:x:/@p5.mysql.select/*/*/id?value
-              p5.mysql.connect:[sulphur]
-                p5.mysql.transaction.begin
-                  p5.mysql.select:@"select username, prefix, filename, type from files where id = @id"
-                    @id:x:/@_id?value
-                  p5.mysql.delete:@"delete from files where id = @id"
-                    @id:x:/@_id?value
-
-                  /*
-                   * Figuring out file's folder.
-                   */
-                  _folder
-                  if:x:/@p5.mysql.select/*/*/username?value
-                    =:guest
-                    and:x:/@p5.mysql.select/*/*/type?value
-                      =:private
-
-                    /*
-                     * Privately owned guest file.
-                     */
-                    set:x:/@_folder?value
-                      src:/common/documents/private/
-
-                  else-if:x:/@p5.mysql.select/*/*/type?value
+                _folder
+                if:x:/@p5.mysql.select/*/*/username?value
+                  =:guest
+                  and:x:/@p5.mysql.select/*/*/type?value
                     =:private
 
-                    /*
-                     * Privately owned user file.
-                     */
-                    set:x:/@_folder?value
-                      src:/users/{0}/documents/private/
-                        :x:/@p5.mysql.select/*/*/username?value
+                  /*
+                   * Privately owned guest file.
+                   */
+                  set:x:/@_folder?value
+                    src:/common/documents/private/
 
-                  else-if:x:/@p5.mysql.select/*/*/type?value
-                    =:protected
-
-                    /*
-                     * Protected user file.
-                     */
-                    set:x:/@_folder?value
-                      src:/common/documents/private/
-
-                  else-if:x:/@p5.mysql.select/*/*/type?value
-                    =:public
-
-                    /*
-                     * Public user file.
-                     */
-                    set:x:/@_folder?value
-                      src:/common/documents/public/
-
-                  delete-file:{0}{1}{2}
-                    :x:/@_folder?value
-                    :x:/@p5.mysql.select/*/*/prefix?value
-                    :x:/@p5.mysql.select/*/*/filename?value
+                else-if:x:/@p5.mysql.select/*/*/type?value
+                  =:private
 
                   /*
-                   * Committing transaction.
+                   * Privately owned user file.
                    */
-                  p5.mysql.transaction.commit
+                  set:x:/@_folder?value
+                    src:/users/{0}/documents/private/
+                      :x:/@p5.mysql.select/*/*/username?value
+
+                else-if:x:/@p5.mysql.select/*/*/type?value
+                  =:protected
 
                   /*
-                   * Deleting main file editor.
+                   * Protected user file.
                    */
-                  delete-widget:sulphur-file-editor-wrapper
+                  set:x:/@_folder?value
+                    src:/common/documents/private/
+
+                else-if:x:/@p5.mysql.select/*/*/type?value
+                  =:public
 
                   /*
-                   * Making sure we delete the widget wrapping the current file
-                   * from our "grid".
+                   * Public user file.
                    */
-                  sulphur.files.delete:x:/@_id?value
+                  set:x:/@_folder?value
+                    src:/common/documents/public/
+
+                delete-file:{0}{1}{2}
+                  :x:/@_folder?value
+                  :x:/@p5.mysql.select/*/*/prefix?value
+                  :x:/@p5.mysql.select/*/*/filename?value
+
+                /*
+                 * Committing transaction.
+                 */
+                p5.mysql.transaction.commit
+
+                /*
+                 * Deleting main file editor.
+                 */
+                delete-widget:sulphur-file-editor-wrapper
+
+                /*
+                 * Making sure we delete the widget wrapping the current file
+                 * from our "grid".
+                 */
+                sulphur.files.delete:x:/@_id?value
