@@ -430,7 +430,7 @@ p5.mysql.connect:[sulphur]
                 /*
                  * Close button.
                  */
-                button
+                button:sulphur-close-file-editor
                   innerValue:Close
                   style:"margin-bottom:0;"
                   title:Close editor ...

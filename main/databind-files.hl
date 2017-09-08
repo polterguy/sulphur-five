@@ -490,13 +490,16 @@ p5.mysql.connect:[sulphur]
                       innerValue:x:/@p5.mysql.select/*/*/name?value
 
                     /*
-                     * Finding meta owner widget, and changing its value accordingly.
+                     * Finding meta owner and protection widget, and changing its value accordingly.
                      */
                     p5.web.widgets.find-first:x:/../*/_event?value
                       class:sulphur-meta-owner
                     set-widget-property:x:/-/*/*?value
-                      innerValue:"{0} ({1})"
-                        :x:/@p5.mysql.select/*/*/username?value
+                      innerValue:x:/@p5.mysql.select/*/*/username?value
+                    p5.web.widgets.find-first:x:/../*/_event?value
+                      class:sulphur-meta-protection
+                    set-widget-property:x:/-/*/*?value
+                      innerValue:({0})
                         :x:/@p5.mysql.select/*/*/type?value
 
               widgets:databound
@@ -614,14 +617,30 @@ p5.mysql.connect:[sulphur]
                   class:sulphur-meta
                   widgets:databound
                     span
-                      innerValue:@"{2} - {1} - {0:n0}KB - <a href=""{5}user/{3}"">{3}</a> ({4}) - <a href=""{5}batch/{6}"">batch</a>"
-                        :x:/@_length?value
-                        :x:/@p5.types.date.format?value
+                      innerValue:@"{0} - {1} - {2:n0}KB"
                         :x:/@_dp/#/*/filename?value
-                        :x:/@_dp/#/*/username?value
-                        :x:/@_dp/#/*/type?value
+                        :x:/@p5.types.date.format?value
+                        :x:/@_length?value
+                    span
+                      innerValue:" - "
+                    a
+                      href:{0}/batch/{1}
                         :x:/@_app-root-url?value
                         :x:/@_dp/#/*/batchid?value
+                      innerValue:batch
+                    span
+                      innerValue:" - "
+                    a
+                      class:sulphur-meta-owner
+                      href:{0}/user/{1}
+                        :x:/@_app-root-url?value
+                        :x:/@_dp/#/*/username?value
+                      innerValue:{0}
+                        :x:/@_dp/#/*/username?value
+                    span
+                      class:sulphur-meta-protection
+                      innerValue:({0})
+                        :x:/@_dp/#/*/type?value
 
   /*
    * Clearing widget's old content, and re-databinding files grid.
