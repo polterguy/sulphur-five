@@ -24,7 +24,7 @@
 }
 .sulphur-file-action-buttons {
     position:absolute;
-    top:10px;
+    top:8px;
     right:10px;
 }
 .sulphur-file-action-buttons button {
@@ -43,22 +43,4 @@
     display:block;
     text-align:center;
     font-size:1.1rem;
-}
-
-
-.sulphur-file-editor {
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,.5);
-}
-.sulphur-file-item-edit {
-    max-width:700px;
-    width:calc(100% - 2rem);
-    margin-left:auto;
-    margin-right:auto;
-    margin-top:5rem;
-    cursor:default;
 }

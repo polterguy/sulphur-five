@@ -153,20 +153,6 @@ create-widget
                   :x:/@_app-root-url?value
                   :x:/@p5.html.url-encode?value
 
-            /*
-             * Clear search button.
-             */
-            button:sulphur-clear-button
-              innerValue:@"<span class=""icon-remove""></span>"
-              title:Clear all filter conditions
-              onclick
-
-                /*
-                 * Redirecting to app's root URL.
-                 */
-                _app-root-url:x:/@_app-root-url?value
-                p5.web.set-location:x:/-?value
-
     /*
      * Wrapper for settings button, upload button, home button, and file input
      * element, that encapsulates uploading of files from the client.
@@ -248,6 +234,22 @@ window.onscroll = function() {
              * Adding more files to datagrid.
              */
             p5.web.viewstate.get:sulphur.last-file-id
+
+            /*
+             * Checking if we have a query/search parameter first.
+             */
+            p5.web.query.get:q
+            if:x:/@p5.web.query.get/*?value
+
+              /*
+               * Invocation contains a query/search HTTP GET parameter, first making sure
+               * our databind invocation is given our query parameter.
+               */
+              eval-x:x:/+/*/*
+              add:x:/../*/micro.evaluate.file
+                src
+                  filter:x:/@p5.web.query.get/*?value
+
             eval-x:x:/+/*
             micro.evaluate.file:@SULPHUR/main/databind-files.hl
               more:x:/@p5.web.viewstate.get/*?value

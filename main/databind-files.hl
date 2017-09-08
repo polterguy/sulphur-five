@@ -29,8 +29,9 @@ micro.lambda.contract.optional:x:/..
 
 /*
  * Checking if a filter was provided, and if so, adding a "where" clause to 
- * our SQL statement.
+ * our SQL statement, which filters away anything not matching the specified filter.
  */
+_has-filter:bool:false
 _filter
 if:x:/../*/filter?value
 
@@ -46,6 +47,8 @@ if:x:/../*/filter?value
         :x:/../*/filter?value
       @exact:"{0}"
         :x:/../*/filter?value
+  set:x:/@_has-filter?value
+    src:bool:true
 
 
 
@@ -57,7 +60,8 @@ if:x:/../*/filter?value
  * Notice, a user has access to all of his own files, in addition to all public
  * and protected files.
  *
- * The exception is a "guest", which only has access to public files.
+ * The exception is a "guest", which only has access to public files, and not even
+ * its own private or protected files.
  */
 whoami
 _where
@@ -168,6 +172,8 @@ if:x:/../*/split/[0,1]/1?name
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
       @username2:x:/../*/split/[0,1]/2?name
+  set:x:/@_has-filter?value
+    src:bool:true
 
 
 
@@ -177,7 +183,6 @@ if:x:/../*/split/[0,1]/1?name
  * Checking if we should only show items belonging to a specific batch upload.
  */
 _batch
-_limit
 if:x:/../*/split/[0,1]/1?name
   =:batch
 
@@ -189,27 +194,8 @@ if:x:/../*/split/[0,1]/1?name
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
       @batch:x:/../*/split/[0,1]/2?name
-
-else
-
-  /*
-   * Unless caller requests a specific batch, we never show more than 10 files
-   * at the same time.
-   *
-   * The only reason we show all files, at the same time, if a user requests a
-   * specific batch, is to allow for SEO and spiders to be able to crawl all
-   * publicly available files on a server, to more easily facilitate for "mirroring" 
-   * of files according to SHA1 value.
-   *
-   * If we hadn't done this, in theory, due to our "never ending scrolling" feature,
-   * we might have risked that all files in the same batch, beyond the first 10
-   * files, would never be visible for crawlers.
-   */
-  set:x:/@_limit?value
-    src:"limit 10 offset @offset"
-  add:x:/../*/p5.mysql.connect/*/p5.mysql.select
-    src
-      @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
+  set:x:/@_has-filter?value
+    src:bool:true
 
 
 
@@ -230,6 +216,8 @@ if:x:/../*/split/[0,1]/1?name
   add:x:/../*/p5.mysql.connect/*/p5.mysql.select
     src
       @sha:x:/../*/split/[0,1]/2?name
+  set:x:/@_has-filter?value
+    src:bool:true
 
 
 
@@ -251,6 +239,8 @@ if:x:/../*/split/[0,1]/1?name
     src
       @tag:@"#[[:<:]]{0}[[:>:]]"
         :x:/../*/split/[0,1]/2?name
+  set:x:/@_has-filter?value
+    src:bool:true
 
 
 
@@ -260,28 +250,19 @@ if:x:/../*/split/[0,1]/1?name
  * Connecting to database and selecting available files for user.
  */
 p5.mysql.connect:[sulphur]
-  p5.mysql.select:@"select * from files where {0} {1} {2} {3} {4} {5} {7} order by id desc {6}"
+  p5.mysql.select:@"select * from files where {0} {1} {2} {3} {4} {5} {6} order by id desc limit 10 offset @offset"
     :x:/@_where?value
     :x:/@_filter?value
     :x:/@_more?value
     :x:/@_who?value
     :x:/@_batch?value
     :x:/@_sha?value
-    :x:/@_limit?value
     :x:/@_tag?value
+    @offset:x:(/../*/offset|/../*/.defaults/*/offset)/$?value.int
 
   /*
    * Making sure we display "end of dataset ruler" if we are at end of dataset,
-   * and it doesn't exist from before.
-   *
-   * Notice, if there are more than 10 files in our result, it means we're showing
-   * an entire "batch" atthe same time, at which point we also supply a link to
-   * the main app's root URL, to among other things, allow for spiders to more
-   * easily crawl the website.
-   *
-   * The latter implies that publishing a "popular batch of file", can significantly
-   * increase your site's PageRank, among other things, and such become an opportunity
-   * to publish other types of files more successfully.
+   * and there doesn't exist one from before.
    */
   if:x:/@p5.mysql.select/*?count.int
     <:int:10
@@ -289,24 +270,23 @@ p5.mysql.connect:[sulphur]
       fetch:x:/0/0?value
         widget-exists:sulphur-at-end-of-dataset
       not
-    or:x:/@p5.mysql.select/*?count.int
-      >:int:10
 
     /*
-     * "End of dataset ruler" does not exist, and we are at the end of our dataset,
-     * hence creating a visual clue, signaling that we're at the end of dataset,
+     * "End of dataset ruler" does not exist, and we're at the end of our dataset.
+     * Hence we create a visual clue, signaling that we're at the end of dataset,
      * in addition to signaling to JavaScript logic, that it shouldn't try to 
-     * fetch more items.
+     * fetch more items, even if the user scrolls to the bottom of his page.
      */
-    create-widget:sulphur-at-end-of-dataset
-      parent:sulphur-main-container
-      class:col
-      widgets
-        hr
-        a
-          class:sulphur-home-link
-          href:x:/@_app-root-url?value
-          innerValue:See all files
+    if:x:/../*/_has-filter?value
+      create-widget:sulphur-at-end-of-dataset
+        parent:sulphur-main-container
+        class:col
+        widgets
+          hr
+          a
+            class:sulphur-home-link
+            href:x:/@_app-root-url?value
+            innerValue:See all files
     p5.web.send-javascript:"p5.sulphur_end_of_dataset = true;"
 
   else-if:x:/@p5.mysql.select/*?count.int
@@ -624,7 +604,7 @@ p5.mysql.connect:[sulphur]
                     span
                       innerValue:" - "
                     a
-                      href:{0}/batch/{1}
+                      href:{0}batch/{1}
                         :x:/@_app-root-url?value
                         :x:/@_dp/#/*/batchid?value
                       innerValue:batch
@@ -632,7 +612,7 @@ p5.mysql.connect:[sulphur]
                       innerValue:" - "
                     a
                       class:sulphur-meta-owner
-                      href:{0}/user/{1}
+                      href:{0}user/{1}
                         :x:/@_app-root-url?value
                         :x:/@_dp/#/*/username?value
                       innerValue:{0}
@@ -657,10 +637,10 @@ p5.mysql.connect:[sulphur]
     clear-widget:sulphur-files-grid
 
     /*
-     * Checking if we should display who these files belongs to 
+     * Checking if we should display who these files belongs to
      * (if dataset is filtered for a specific user that is).
      *
-     * Or if we're viewing a "batch" of files.
+     * Or if we're viewing a "batch" of files, tag, query, etc.
      */
     if:x:/../*/split/[0,1]/1?name
       =:user
@@ -695,6 +675,24 @@ p5.mysql.connect:[sulphur]
               :x:/../*/split/[0,1]/2?name
       p5.web.page.set-title:Files tagged with #{0}
         :x:/../*/split/[0,1]/2?name
+
+    else-if:x:/../*/filter?value
+      !=:
+      and:x:/../*/filter?value
+
+      /*
+       * Making sure we display the search query user provided.
+       */
+      create-widget
+        parent:sulphur-files-grid
+        class:col
+        widgets
+          h1
+            style:"margin-left:auto;margin-right:auto;font-size:1.1rem;text-align:center;"
+            innerValue:Results for '{0}'
+              :x:/../*/filter?value
+      p5.web.page.set-title:Results for '{0}'
+        :x:/../*/filter?value
 
     else-if:x:/../*/split/[0,1]/1?name
       =:batch
@@ -735,19 +733,16 @@ p5.mysql.connect:[sulphur]
             innerValue:{0} - {1}
               :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/name?value
               :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/sha?value
-
-      /*
-       * To create some further SEO feature, in addition to setting the page's title,
-       * we also set the title to the file's SHA1 value.
-       *
-       * Notice, these types of features might seem weird for the uninitiated, but
-       * it allows people to search for files, according to their SHA1 values, which
-       * allows them to find the same file, at different locations, if the file
-       * for some reasons is taken down from one server.
-       */
       p5.web.page.set-title:{0} - {1}
         :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/name?value
         :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/sha?value
+
+    else
+
+      /*
+       * Creating our "generic" page title and header.
+       */
+      p5.web.page.set-title:All your available files
 
   /*
    * Creating widgets for each file.
