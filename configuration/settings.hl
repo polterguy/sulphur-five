@@ -73,6 +73,10 @@ create-widgets
               class:strip
               style:"display:inline-block;"
               widgets
+
+                /*
+                 * Save settings and close button.
+                 */
                 button
                   innerValue:Save
                   style:"margin-bottom:0;"
@@ -97,15 +101,5 @@ create-widgets
 
                     /*
                      * Deleting modal settings widget.
-                     */
-                    delete-widget:sulphur-modal-settings
-
-                button
-                  innerValue:Close
-                  style:"margin-bottom:0;"
-                  onclick
-
-                    /*
-                     * Simply deleting modal settings widget.
                      */
                     delete-widget:sulphur-modal-settings
