@@ -206,7 +206,7 @@ if:x:/../*/split/[0,1]/1?name
  */
 _sha
 if:x:/../*/split/[0,1]/1?name
-  =:sha
+  =:file
 
   /*
    * Client wants to view only file matching specified SHA1 value.
@@ -250,7 +250,7 @@ if:x:/../*/split/[0,1]/1?name
  * Connecting to database and selecting available files for user.
  */
 p5.mysql.connect:[sulphur]
-  p5.mysql.select:@"select * from files where {0} {1} {2} {3} {4} {5} {6} order by id desc limit 10 offset @offset"
+  p5.mysql.select:@"select * from files where {0} {1} {2} {3} {4} {5} {6} order by id desc limit 20 offset @offset"
     :x:/@_where?value
     :x:/@_filter?value
     :x:/@_more?value
@@ -265,7 +265,7 @@ p5.mysql.connect:[sulphur]
    * and there doesn't exist one from before.
    */
   if:x:/@p5.mysql.select/*?count.int
-    <:int:10
+    <:int:20
     and
       fetch:x:/0/0?value
         widget-exists:sulphur-at-end-of-dataset
@@ -290,7 +290,7 @@ p5.mysql.connect:[sulphur]
     p5.web.send-javascript:"p5.sulphur_end_of_dataset = true;"
 
   else-if:x:/@p5.mysql.select/*?count.int
-    >=:int:10
+    >=:int:20
     and
       fetch:x:/0/0?value
         widget-exists:sulphur-at-end-of-dataset
@@ -490,7 +490,7 @@ p5.mysql.connect:[sulphur]
                  * Not filename, but friendly "header" for file that is.
                  */
                 a
-                  href:{0}sha/{1}
+                  href:{0}file/{1}
                     :x:/@_app-root-url?value
                     :x:/@_dp/#/*/sha?value
                   widgets
@@ -713,7 +713,7 @@ p5.mysql.connect:[sulphur]
         :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/username?value
 
     else-if:x:/../*/split/[0,1]/1?name
-      =:sha
+      =:file
 
       /*
        * Making sure we display the the SHA value for file, as an H1 header,
