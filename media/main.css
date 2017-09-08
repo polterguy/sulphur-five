@@ -13,6 +13,7 @@
 }
 .sulphur-file-name {
     display:inline-block;
+    margin-bottom:0;
 }
 .sulphur-file-description {
     margin-bottom:-.5rem;
@@ -22,6 +23,7 @@
     color:#d0d0d0;
     font-style:italic;
     text-align:right;
+    margin-top:1rem;
 }
 .sulphur-file-action-buttons {
     position:absolute;
