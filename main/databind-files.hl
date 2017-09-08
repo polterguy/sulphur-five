@@ -300,13 +300,13 @@ p5.mysql.connect:[sulphur]
      */
     create-widget:sulphur-at-end-of-dataset
       parent:sulphur-main-container
-      element:hr
-    create-widget:sulphur-at-end-of-dataset-home
-      parent:sulphur-main-container
-      element:a
-      class:sulphur-home-link
-      href:x:/@_app-root-url?value
-      innerValue:See all files
+      class:col
+      widgets
+        hr
+        a
+          class:sulphur-home-link
+          href:x:/@_app-root-url?value
+          innerValue:See all files
     p5.web.send-javascript:"p5.sulphur_end_of_dataset = true;"
 
   else-if:x:/@p5.mysql.select/*?count.int
@@ -322,7 +322,6 @@ p5.mysql.connect:[sulphur]
      * of page.
      */
     delete-widget:sulphur-at-end-of-dataset
-    delete-widget:sulphur-at-end-of-dataset-home
     p5.web.send-javascript:"p5.sulphur_end_of_dataset = false;"
 
   /*
@@ -652,10 +651,14 @@ p5.mysql.connect:[sulphur]
        */
       create-widget
         parent:sulphur-files-grid
-        style:"margin-left:auto;margin-right:auto;font-size:1.1rem;"
-        element:h1
-        innerValue:{0}'s files
-          :x:/../*/split/[0,1]/2?name
+        class:col
+        widgets
+          h1
+            style:"margin-left:auto;margin-right:auto;font-size:1.1rem;text-align:center;"
+            innerValue:{0}'s files
+              :x:/../*/split/[0,1]/2?name
+      p5.web.page.set-title:{0}'s files
+        :x:/../*/split/[0,1]/2?name
 
     else-if:x:/../*/split/[0,1]/1?name
       =:tag
@@ -665,10 +668,14 @@ p5.mysql.connect:[sulphur]
        */
       create-widget
         parent:sulphur-files-grid
-        style:"margin-left:auto;margin-right:auto;font-size:1.1rem;"
-        element:h1
-        innerValue:#{0}
-          :x:/../*/split/[0,1]/2?name
+        class:col
+        widgets
+          h1
+            style:"margin-left:auto;margin-right:auto;font-size:1.1rem;text-align:center;"
+            innerValue:#{0}
+              :x:/../*/split/[0,1]/2?name
+      p5.web.page.set-title:Files tagged with #{0}
+        :x:/../*/split/[0,1]/2?name
 
     else-if:x:/../*/split/[0,1]/1?name
       =:batch
@@ -679,10 +686,14 @@ p5.mysql.connect:[sulphur]
        */
       create-widget
         parent:sulphur-files-grid
-        style:"margin-left:auto;margin-right:auto;font-size:1.1rem;"
-        element:h1
-        innerValue:Batch by {0}
-          :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/username?value
+        class:col
+        widgets
+          h1
+            style:"margin-left:auto;margin-right:auto;font-size:1.1rem;text-align:center;"
+            innerValue:Batch by {0}
+              :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/username?value
+      p5.web.page.set-title:Batch by {0}
+        :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/username?value
 
     else-if:x:/../*/split/[0,1]/1?name
       =:sha
@@ -698,10 +709,13 @@ p5.mysql.connect:[sulphur]
        */
       create-widget
         parent:sulphur-files-grid
-        style:"margin-left:auto;margin-right:auto;font-size:1.1rem;"
-        element:h1
-        innerValue:{0}
-          :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/sha?value
+        class:col
+        widgets
+          h1
+            style:"margin-left:auto;margin-right:auto;font-size:1.1rem;word-wrap:break-word;text-align:center;"
+            innerValue:{0} - {1}
+              :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/name?value
+              :x:/../*/p5.mysql.connect/*/p5.mysql.select/*/*/sha?value
 
       /*
        * To create some further SEO feature, in addition to setting the page's title,
