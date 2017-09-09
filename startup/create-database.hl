@@ -1,6 +1,6 @@
 
 /*
- * Creating database if it doesn't exist, assuming connection string in web.config exists, and is named "sulphur".
+ * Creating database if it doesn't exist.
  */
 try
   p5.mysql.connect:[sulphur]
