@@ -1,5 +1,5 @@
 
-# Sulphur Five - Secure file sharing for everyone
+# Sulphur Five - Secure web file sharing
 
 Sulphur Five is an Open Source file sharing module for [Phosphorus Five](https://github.com/polterguy/phosphorusfive), that allows you
 to cryptographically secured share files with your friends, family, and colleagues. When you upload a file, you can choose to either mark it
@@ -11,8 +11,8 @@ users in the system. A public file is accessible for everyone, including randoml
 ## Hashtagging your files
 
 Often it can be difficult to categorise a file into a single folder. Therefor we have completely eliminated that problem, by putting all
-your files into a single virtual folder, and rather allow you to #hashtag your files as you see fit. This allows you to put a single file into
-multiple categories, according to its relevance, by simply #tagging your file, as you provide a description for it.
+your files into a single virtual folder, and rather allow you to __#hashtag__ your files as you see fit. This allows you to put a single file into
+multiple categories, according to its relevance, by simply __#tagging__ your file, as you provide a description for it.
 
 If you see the video file that is shared in the above screenshot for instance, it is hashtagged with three different tags.
 
@@ -20,7 +20,7 @@ If you see the video file that is shared in the above screenshot for instance, i
 * #CC - Implying Commons Creative
 * #free
 
-This allows you to more easily find your files later, by searching for a file, according to its tag, instead of having to browse through multiple folders.
+This allows you to more easily find your files later, by searching for a file, according to its tag - Instead of having to browse through multiple folders.
 
 ## Describe your files with Markdown
 
@@ -37,8 +37,8 @@ the file's content, and associated with the file. This allows you to cryptograph
 file you requested, and not some bogus file, served by a malicious man in the middle.
 
 This also happens to facilitate for extreme mirroring of files, where if a file for some reasons, is lost in one server, you can still search for its
-SHA1 value in other servers, and possibly find your file - If it has been shared by other instances that is. This allows you to massively distributed
-share the same file, on literally thousands of different servers, yet still have a cryptographic guarantee of that it is the exact same file, and that 
+SHA1 value in other servers, and possibly find your file - If it has been shared by others. This allows you to massively distributed
+share the same file, on literally thousands of different servers - Yet still have a cryptographic guarantee of that it is the exact same file, and that 
 it has not been tampered with in any ways!
 
 When the system converts the specified Markdown into HTML, it will even _"whitewash"_ the resulting HTML tag result, and only display what is considered
@@ -65,7 +65,8 @@ until there are no more results matching your criteria.
 The system can also be configured to act as a _"WikiLeaks dropbox"_, allowing for anonymous guests to upload files to your server. Although most people
 would probably not want this, some few might want such features. Potential candidates for setting up the system into such a modus operandi, might be
 media houses, magazines, news providers, etc. Combined with teaching your users to use the [Tor Browser](https://www.torproject.org/projects/torbrowser.html.en), 
-this allows you to anonymously accept files, tips and such from sources, whom you wouldn't even know yourself who are.
+this allows you to accept anonymous tips, with files and such from sources - Where even you wouldn't even know yourself who tipped you. The 
+latter is considered crucial for protecting sources for journalists.
 
 ![alt screenshot of Sephia Five](media/screenshots/screenshot-3.png)
 
