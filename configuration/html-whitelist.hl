@@ -1,9 +1,8 @@
 
 /*
- * Contains the list of legal HTML elements and attributes an HTML email can contain.
+ * Contains the list of legal HTML elements and attributes a Markdown description can contain.
  *
- * Notice, all elements and tags not listed in this file, will be removed before 
- * an HTML email is displayed.
+ * Notice, all elements and tags not listed in this file, will be removed.
  */
 
 // Elements.
