@@ -36,7 +36,7 @@ create-event:sulphur._internals.html.create-hyperlinks-and-tags
    * websites, to know the origin of the request.
    */
   replace:x:/@replace?value
-    src:regex:@"/(\(|<|\[|\s|>)+(http|https|ftp)(\://)([a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3})((:[a-zA-Z0-9]*)?/?([a-zA-Z0-9\-\._\?\,\'/\\\+&amp;%\$#\=~])*)/"
+    src:regex:@"/(\(|<|\[|\s|>)+(http|https|ftp)(\://)([a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3})((:[a-zA-Z0-9]*)?/?([a-zA-Z0-9\(\)\-\._\?\,\'/\\\+&amp;%\$#\=~])*)/"
     dest:@"$1<a rel=""noreferrer"" target=""_blank"" href=""$2$3$4$5""><strong>$4</strong>$5</a>"
 
   /*

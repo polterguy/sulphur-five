@@ -223,8 +223,16 @@ create-widget
 window.onscroll = function() {
   if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
     if (!p5.sulphur_end_of_dataset) {
+      if(p5.sulphur_ongoing_scroll === true) {
+        return;
+      }
+      p5.sulphur_ongoing_scroll = true;
       var el = p5.$('sulphur-files-grid');
-      el.raise('.onfeed');
+      el.raise('.onfeed',{
+        onsuccess:function() {
+          p5.sulphur_ongoing_scroll = false;
+        }
+      });
     }
   }
 };"
