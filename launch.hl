@@ -100,7 +100,6 @@ create-container-widget:sulphur-main-container
  * main CSS file.
  */
 p5.web.include-css-file:@MICRO/media/main.css
-p5.web.include-css-file:@MICRO/media/ext.css
 p5.web.include-css-file:@MICRO/media/fonts.css
 p5.web.include-css-file:@MICRO/media/skins/serious.css
 p5.web.include-css-file:@SULPHUR/media/main.css
