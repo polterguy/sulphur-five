@@ -103,7 +103,7 @@ create-widget
      * Wraps our search textbox and button.
      */
     div
-      class:col-70
+      class:col-60
       widgets
         div
           class:fill strip
@@ -158,15 +158,24 @@ create-widget
      * element, that encapsulates uploading of files from the client.
      */
     div
-      class:col-30
+      class:col
       widgets
         div
           class:right
           widgets
             div
-              class:strip
+              class:strip toolbar
               style:"display:inline-block;"
               widgets
+
+                /*
+                 * Upload file button.
+                 */
+                button:sulphur-upload-widget
+                  style:"padding-left:45px;padding-right:45px;"
+                  innerValue:@"<span class=""icon-upload""></span>"
+                  title:Upload file ...
+                  onclick:@"p5.dropzone.browse();event.stopPropagation(true);return false;"
 
                 /*
                  * Settings button.
@@ -180,15 +189,6 @@ create-widget
                      * Launching settings form.
                      */
                     micro.evaluate.file:@SULPHUR/configuration/settings.hl
-
-                /*
-                 * Upload file button.
-                 */
-                button:sulphur-upload-widget
-                  style:"padding-left:35px;padding-right:35px;"
-                  innerValue:@"<span class=""icon-upload""></span>"
-                  title:Upload file ...
-                  onclick:@"p5.dropzone.browse();event.stopPropagation(true);return false;"
 
                 /*
                  * Home button, leads user to main desktop.
