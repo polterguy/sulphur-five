@@ -216,7 +216,7 @@ create-widget
           oninit
 
             /*
-             * Including JavaScript to determine is user is at the bottom of page,
+             * Including JavaScript to determine if user is at the bottom of page,
              * at which point we "auto-feed" grid with more items.
              */
             p5.web.include-javascript:@"
