@@ -173,7 +173,7 @@ create-widget
                  */
                 button:sulphur-upload-widget
                   style:"padding-left:45px;padding-right:45px;"
-                  innerValue:@"<span class=""icon-upload""></span>"
+                  innerValue:@"<span class=""icon-upload2""></span>"
                   title:Upload file ...
                   onclick:@"p5.dropzone.browse();event.stopPropagation(true);return false;"
 
@@ -194,7 +194,7 @@ create-widget
                  * Home button, leads user to main desktop.
                  */
                 button
-                  innerValue:@"<span class=""icon-home""></span>"
+                  innerValue:@"<span class=""icon-home3""></span>"
                   title:Return to desktop
                   onclick
 

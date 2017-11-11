@@ -568,7 +568,7 @@ p5.mysql.connect:[sulphur]
                      * Download file hyperlink.
                      */
                     a
-                      innerValue:@"<span class=""icon-download""></span>"
+                      innerValue:@"<span class=""icon-download2""></span>"
                       title:Download file ...
                       rel:nofollow
                       oninit
