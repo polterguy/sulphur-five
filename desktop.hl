@@ -1,16 +1,14 @@
-
-
 /*
- * Desktop widget creator file for Sulphur Five.
+ * Desktop widget.
  */
 container
   element:a
   class:desktop-app shaded rounded air-inner
-  title:Files
+  title:Sulphur Five
   oninit
 
     /*
-     * Getting URL to point correctly.
+     * Setting href attribute for bugger.
      */
     p5.io.unroll-path:@SULPHUR/
     split:x:/-?value
@@ -22,55 +20,10 @@ container
   widgets
     span
       class:desktop-app-name
-      innerValue:Files
-      oninit
-
-        /*
-         * Doing a count of files that current user (or guest) is allowed to access,
-         * and adding the count to icon, to illustrate how many available files there exists.
-         */
-        _sql
-        whoami
-        if:x:/@whoami/*/default?value
-
-          /*
-           * User is not logged in, only showing count of publicly available files.
-           */
-          set:x:/@_sql?value
-            src:@"select count(*) from files where type = 'public'"
-
-        else-if:x:/@whoami/*/role?value
-          =:root
-
-          /*
-           * User is logged in as root, displaying count of all protected files, 
-           * public files, and files belonging to user - In addition to all private 
-           * files belonging to "guest".
-           */
-          set:x:/@_sql?value
-            src:@"select count(*) from files where type = 'public' or type = 'protected' or username = @username or username = 'guest'"
-          add:x:/../**/p5.mysql.scalar
-            src
-              @username:x:/@whoami/*/username?value
-
-        else
-
-          /*
-           * User is logged in, but he is not root, displaying count of all protected files, 
-           * public files, and files belonging to user.
-           */
-          set:x:/@_sql?value
-            src:@"select count(*) from files where type = 'public' or type = 'protected' or username = @username"
-          add:x:/../**/p5.mysql.scalar
-            src
-              @username:x:/@whoami/*/username?value
-
-        p5.mysql.connect:[sulphur]
-          p5.mysql.scalar:x:/@_sql?value
-
-          /*
-           * Setting widget's innerValue, adding count of files user has access to.
-           */
-          set-widget-property:x:/../*/_event?value
-            innerValue:@"<span class=""icon-briefcase desktop-app-icon""></span><span style=""position:absolute;top:5px;right:5px;font-size:.7rem;"">Files - {0}</span>"
-              :x:/@p5.mysql.scalar?value
+      widgets
+        literal
+          element:span
+          class:icon-briefcase desktop-app-icon
+        span
+          style:"position:absolute;top:5px;right:5px;font-size:.7rem;"
+          innerValue:Files
