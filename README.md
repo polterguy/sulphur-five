@@ -1,4 +1,3 @@
-
 # Sulphur Five - Secure web file sharing
 
 Sulphur Five is an Open Source file sharing module for [Phosphorus Five](https://github.com/polterguy/phosphorusfive), that allows you
@@ -70,15 +69,16 @@ latter is considered crucial for protecting sources for journalists.
 
 ![alt screenshot of Sephia Five](media/screenshots/screenshot-3.png)
 
-## Getting started
+## Installation
 
-The easiest way of installing Sulphur Five, is by following the installation process for [Phosphorus Five](https://github.com/polterguy/phosphorusfive),
-for then to visit the _"Bazar"_, and simply choose to install Sulphur Five.
-
-I have a sample demonstration of the system installed on my own _"Home Cloud"_. Be warned though, that this is website running on an old converted
-laptop, converted into a Ubuntu web server, running out of my living room, on an average home internet connection. So it might be slow, especially
-if a lot of users are accessing it at the same time. If you'd like to check it out, feel free to [visit my home](https://home.gaiasoul.com). I have 
-only shared some very few files though, and I do not accept anonymous uploads.
+The easiest way to install it, is to [install phosphorus five](https://github.com/polterguy/phosphorusfive),
+for then to visit _"The Bazar"_, and simply install it through the Bazar on your local machine/server.
+However, if you want a more manual installation path, you can download the latest release,
+unzip it, and move the unzipped root folder into your _"core/p5.webapp/modules"_ folder. If you
+choose this path, you should rename the folder, removing any version information, making sure
+your module folder is called exactly _"sulphur-five"_. Installation through the Bazar
+also requires you having some sort of GnuPG client on your machine/server. If you don't want
+to fiddle with installing GnuPG, you can resort to download the latest zip file release directly.
 
 ## License
 
