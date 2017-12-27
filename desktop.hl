@@ -5,18 +5,6 @@ container
   element:a
   class:desktop-app shaded rounded air-inner
   title:Sulphur Five
-  oninit
-
-    /*
-     * Setting href attribute for bugger.
-     */
-    p5.io.unroll-path:@SULPHUR/
-    split:x:/-?value
-      =:/
-    set-widget-property:x:/../*/_event?value
-      href:/{0}
-        :x:/@split/0/-?name
-
   widgets
     span
       class:desktop-app-name
