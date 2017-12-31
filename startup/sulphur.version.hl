@@ -4,4 +4,4 @@
  */
 create-event:sulphur.version
 
-  return:decimal:5.4
+  return:decimal:5.6
