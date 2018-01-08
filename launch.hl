@@ -99,13 +99,11 @@ create-container-widget:sulphur-main-container
  * Including Micro, adding Awesome Fonts, serious skin, in addition to Sulphur's
  * main CSS file.
  */
-micro.page.minify-and-bundle-css-file
+p5.web.include-css-file
   @MICRO/media/main.css
   @MICRO/media/fonts.css
   @MICRO/media/skins/serious.css
-p5.web.include-css-file:x:/-?value
-micro.page.minify-and-bundle-css-file:@SULPHUR/media/main.css
-p5.web.include-css-file:x:/-?value
+  @SULPHUR/media/main.css
 
 
 
