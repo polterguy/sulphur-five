@@ -96,11 +96,11 @@ create-container-widget:sulphur-main-container
 
 
 /*
- * Including Micro, adding Awesome Fonts, off-white skin, in addition to Sulphur's
+ * Including Micro, adding Awesome Fonts, serious skin, in addition to Sulphur's
  * main CSS file.
  */
 micro.css.include
-  skin:off-white
+  skin:serious
 p5.web.include-css-file
   @SULPHUR/media/main.css
 
