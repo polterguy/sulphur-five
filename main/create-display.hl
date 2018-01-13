@@ -172,7 +172,7 @@ create-widget
                  * Upload file button.
                  */
                 button:sulphur-upload-widget
-                  style:"padding-left:35px;padding-right:35px;"
+                  class:larger
                   innerValue:@"<span class=""icon-upload2""></span>"
                   title:Upload file ...
                   onclick:@"p5.dropzone.browse();event.stopPropagation(true);return false;"
