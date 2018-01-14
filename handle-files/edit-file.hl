@@ -348,7 +348,6 @@ p5.mysql.connect:[sulphur]
                  */
                 button
                   innerValue:@"<span class=""icon-bin""></span>"
-                  style:"margin-bottom:0;"
                   title:Delete file ...
                   onclick
 
@@ -432,7 +431,6 @@ p5.mysql.connect:[sulphur]
                  */
                 button:sulphur-close-file-editor
                   innerValue:Close
-                  style:"margin-bottom:0;"
                   title:Close editor ...
                   onclick
 

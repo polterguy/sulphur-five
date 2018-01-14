@@ -79,7 +79,6 @@ create-widgets
                  */
                 button
                   innerValue:Save
-                  style:"margin-bottom:0;"
                   oninit
 
                     /*
