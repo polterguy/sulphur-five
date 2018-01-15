@@ -1,36 +1,22 @@
-
 /*
- * Startup file for Sulphur Five.
+ * Startup file.
  *
- * This file is evaluated every time the server restarts, or the web server process is recycled for some reasons.
- *
- * This file simply creates an "IO environment variable", allowing us to more easily access the main 
- * Sulphur application folder, in addition to evaluating all Hyperlambda files inside our "/startup/" folder.
+ * Creates "path" event and evaluates all files in "/startup/" folder for module.
  */
 
 
-
-
-
 /*
- * Creates the "path" Active Event that points to our "/sulphur-five/" folder.
- * This is done in such a way that we can put Sulphur Five into any folder we wish.
+ * Creates our "path" Active Event for module.
  */
-split:x:/..?name
-  =:/
-set:x:/@split/0/-
-join:x:/@split/*?name
-  sep:/
+micro.path.get-folder:x:/..?name
+trim-right:x:/@micro.path.get-folder?value
+  chars:/
 eval-x:x:/+/*
 create-event:p5.io.unroll-path.@SULPHUR
-  return:/{0}
-    :x:/@join?value
-
-
-
+  return:x:/@trim-right?value
 
 
 /*
- * Evaluating all other startup scripts.
+ * Evaluating all other startup files.
  */
 micro.evaluate.folder:@SULPHUR/startup/
