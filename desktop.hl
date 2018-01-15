@@ -3,16 +3,12 @@
  */
 container
   element:a
-  class:desktop-app shaded rounded air-inner
-  title:Sulphur Five is a file sharing system, allowing you to securely share files, as you see fit
+  class:desktop-app button shaded
+  title:Securely share files with colleagues and friends
   widgets
+    literal
+      element:span
+      class:icon-briefcase desktop-app-icon
     span
-      class:desktop-app-name
-      widgets
-        literal
-          element:span
-          class:icon-briefcase desktop-app-icon
-        span
-          class:desktop-app-text
-          innerValue:Sulphur
-          
+      class:desktop-app-text
+      innerValue:Sulphur

@@ -1,4 +1,3 @@
-﻿
 /*
  * Edits a file.
  *
@@ -287,50 +286,50 @@ p5.mysql.connect:[sulphur]
                 dest:x:/@_dest?value
 
           widgets
-            input:sulphur-rdo-private
-              type:radio
-              name:sulphur-rdo-protection
-              onchange
+            label
+              widgets
+                span
+                  innerValue:Private
+                input:sulphur-rdo-private
+                  type:radio
+                  name:sulphur-rdo-protection
+                  onchange
 
-                /*
-                 * Doing database update.
-                 */
-                sulphur.edit-file.set-protection
-                  protection:private
+                    /*
+                     * Doing database update.
+                     */
+                    sulphur.edit-file.set-protection
+                      protection:private
 
             label
-              for:sulphur-rdo-private
-              innerValue:Private
+              widgets
+                span
+                  innerValue:Protected
+                input:sulphur-rdo-protected
+                  type:radio
+                  name:sulphur-rdo-protection
+                  onchange
 
-            input:sulphur-rdo-protected
-              type:radio
-              name:sulphur-rdo-protection
-              onchange
-
-                /*
-                 * Doing database update.
-                 */
-                sulphur.edit-file.set-protection
-                  protection:protected
-
-            label
-              for:sulphur-rdo-protected
-              innerValue:Protected
-
-            input:sulphur-rdo-public
-              type:radio
-              name:sulphur-rdo-protection
-              onchange
-
-                /*
-                 * Doing database update.
-                 */
-                sulphur.edit-file.set-protection
-                  protection:public
+                    /*
+                     * Doing database update.
+                     */
+                    sulphur.edit-file.set-protection
+                      protection:protected
 
             label
-              for:sulphur-rdo-public
-              innerValue:Public
+              widgets
+                span
+                  innerValue:Public
+                input:sulphur-rdo-public
+                  type:radio
+                  name:sulphur-rdo-protection
+                  onchange
+
+                    /*
+                     * Doing database update.
+                     */
+                    sulphur.edit-file.set-protection
+                      protection:public
 
         /*
          * Wrapped for action buttons.

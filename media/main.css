@@ -1,1 +1,55 @@
-.container{padding-bottom:150px}.sulphur-file-item{display:block;position:relative;background-color:#fefefe;overflow:auto}.sulphur-file-name{display:inline-block;margin-bottom:0}.sulphur-file-description{margin-bottom:-.5rem}.sulphur-meta{font-weight:400;color:#d0d0d0;font-style:italic;text-align:right;margin-top:1rem}.sulphur-file-action-buttons{position:absolute;top:.3rem;right:1rem}.sulphur-file-action-buttons button{border:none;background:0 0;font-size:1.1rem;padding:0 .5rem;display:inline-block;margin-bottom:0}.sulphur-file-action-buttons a{font-size:1.1rem;padding:0 5px 0 10px;display:inline-block}.sulphur-home-link{display:block;text-align:center;font-size:1.1rem}
+.container {
+    padding-bottom: 150px;
+}
+
+.sulphur-file-item {
+    display: block;
+    position: relative;
+    background-color: #fefefe;
+    overflow: auto;
+}
+
+.sulphur-file-name {
+    display: inline-block;
+    margin-bottom: 0;
+}
+
+.sulphur-file-description {
+    margin-bottom: -.5rem;
+}
+
+.sulphur-meta {
+    font-weight: 400;
+    color: #d0d0d0;
+    font-style: italic;
+    text-align: right;
+    margin-top: 2rem;
+    margin-bottom: .5rem;
+}
+
+.sulphur-file-action-buttons {
+    position: absolute;
+    top: .5rem;
+    right: .5rem;
+}
+
+.sulphur-file-action-buttons button {
+    border: none;
+    background: 0 0;
+    font-size: 1.1rem;
+    padding: 0 .5rem;
+    display: inline-block;
+    margin-bottom: 0;
+}
+
+.sulphur-file-action-buttons a {
+    font-size: 1.1rem;
+    padding: 0 5px 0 10px;
+    display: inline-block;
+}
+
+.sulphur-home-link {
+    display: block;
+    text-align: center;
+    font-size: 1.1rem;
+}
