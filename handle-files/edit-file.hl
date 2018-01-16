@@ -339,7 +339,6 @@ p5.mysql.connect:[sulphur]
           widgets
             div
               class:strip
-              style:"display:inline-block;"
               widgets
 
                 /*

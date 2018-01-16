@@ -165,7 +165,6 @@ create-widget
           widgets
             div
               class:strip toolbar
-              style:"display:inline-block;"
               widgets
 
                 /*
