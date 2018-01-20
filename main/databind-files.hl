@@ -1,4 +1,3 @@
-﻿
 /*
  * File responsible for databinding files in the main grid.
  *
@@ -393,7 +392,7 @@ p5.mysql.connect:[sulphur]
           class:col-100
           widgets
             container
-              class:sulphur-file-item rounded shaded air-inner
+              class:sulphur-file-item rounded shaded air-inner bg
               _id:x:/@_dp/#/*/id?value
               events
 
