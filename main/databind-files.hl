@@ -501,7 +501,7 @@ p5.mysql.connect:[sulphur]
                  * Wrapper for "action buttons", which includes download and edit buttons.
                  */
                 div
-                  class:sulphur-file-action-buttons
+                  class:sulphur-file-action-buttons strip
                   widgets
 
                     /*
@@ -570,6 +570,7 @@ p5.mysql.connect:[sulphur]
                       innerValue:@"<span class=""icon-download2""></span>"
                       title:Download file ...
                       rel:nofollow
+                      class:button
                       oninit
 
                         /*

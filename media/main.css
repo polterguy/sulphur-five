@@ -32,21 +32,6 @@
     right: .5rem;
 }
 
-.sulphur-file-action-buttons button {
-    border: none;
-    background: 0 0;
-    font-size: 1.1rem;
-    padding: 0 .5rem;
-    display: inline-block;
-    margin-bottom: 0;
-}
-
-.sulphur-file-action-buttons a {
-    font-size: 1.1rem;
-    padding: 0 5px 0 10px;
-    display: inline-block;
-}
-
 .sulphur-home-link {
     display: block;
     text-align: center;
