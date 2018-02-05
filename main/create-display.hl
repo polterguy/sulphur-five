@@ -61,7 +61,7 @@ else
    * file input element, which encapsulates uploading of files, in addition to
    * the button that triggers our "browse for file" dialogue.
    */
-  set:x:/../*/create-widget/**(/button/=sulphur-upload-widget|/micro.widgets.obscurer)
+  set:x:/../*/create-widget/**(/button/=sulphur-upload-widget|/micro.widgets.cover)
 
 
 
@@ -95,7 +95,7 @@ create-widget
     /*
      * Obscurer show when files are uploaded.
      */
-    micro.widgets.obscurer:sulphur-upload-obscurer
+    micro.widgets.cover:sulphur-upload-obscurer
       style:"display:none;"
       message:"Please wait while we upload your files ..."
 

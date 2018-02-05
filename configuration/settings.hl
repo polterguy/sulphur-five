@@ -90,12 +90,12 @@ create-widgets
                     /*
                      * Retrieving settings and updating.
                      */
-                    micro.widgets.wizard-form.value:sulphur-settings
+                    micro.form.serialize:sulphur-settings
                     eval-x:x:/+/*/*/*
                     update-data:x:/*/*/sulphur.settings
                       src
                         sulphur.settings
-                          uploaders:x:/@micro.widgets.wizard-form.value/*/uploaders?value
+                          uploaders:x:/@micro.form.serialize/*/uploaders?value
 
                     /*
                      * Deleting modal settings widget.
